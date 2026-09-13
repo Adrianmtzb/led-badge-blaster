@@ -1,5 +1,6 @@
 #include "console.h"
 #include "app.h"
+#include "config.h"
 #include "catalog.h"
 #include "net_portal.h"
 #include "ir_sender.h"
@@ -72,7 +73,7 @@ static void handleLine(const String& line) {
 
   if (lower == "forget") { netForget(); return; }
   if (lower == "next")   { appNext(); appPrintStatus(); return; }
-  if (lower == "send")   { appSendCurrent(); return; }
+  if (lower == "send")   { appSendCurrent(IR_REPEATS); return; }
 
   if (lower.startsWith("mode ")) {
     String m = lower.substring(5); m.trim();
@@ -92,7 +93,7 @@ static void handleLine(const String& line) {
 
   if (lower.startsWith("raw ")) {
     String hex = lower.substring(4); hex.trim();
-    if (!appSendRaw(hex.c_str())) Serial.println("ERR: trama PRONTO invalida");
+    if (!appSendRaw(hex.c_str(), IR_REPEATS)) Serial.println("ERR: trama PRONTO invalida");
     return;
   }
 
@@ -100,7 +101,7 @@ static void handleLine(const String& line) {
     String n = lower.substring(5); n.trim();
     const long idx = n.toInt();
     if (idx < 0 || idx >= (long)COMMAND_COUNT) { Serial.println("ERR: indice fuera de rango"); return; }
-    appSendAbsolute((uint16_t)idx);
+    appSendAbsolute((uint16_t)idx, IR_REPEATS);
     return;
   }
 

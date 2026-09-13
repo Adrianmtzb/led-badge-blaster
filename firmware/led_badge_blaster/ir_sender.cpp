@@ -57,12 +57,19 @@ void irBegin() {
   irsend.begin();
 }
 
-bool irSendPronto(const char* pronto) {
+bool irSendPronto(const char* pronto, uint8_t extra) {
   if (!pronto) return false;
 
   const uint16_t len = prontoStringToWords(pronto);
   if (len < 4) return false;
 
-  irsend.sendPronto(prontoBuf, len, kNoRepeat);
+  // El parámetro 'repeat' de sendPronto solo repite la segunda secuencia del
+  // PRONTO, y las tramas del badge la llevan vacía: ahí no haría nada. La
+  // repetición tiene que ser el bucle. Cada trama acaba en su propio silencio
+  // (la última palabra), así que los paquetes ya salen separados.
+  if (extra > IR_REPEATS_MAX) extra = IR_REPEATS_MAX;
+  for (uint8_t i = 0; i <= extra; i++)
+    irsend.sendPronto(prontoBuf, len, kNoRepeat);
+
   return true;
 }

@@ -19,7 +19,7 @@ static uint32_t firstClickMs = 0;
 static bool rawButtonPressed() { return digitalRead(PIN_BUTTON) == LOW; }
 
 static void onSingleClick() {
-  appSendCurrent();
+  appSendCurrent(IR_REPEATS);
   appNext();
 }
 

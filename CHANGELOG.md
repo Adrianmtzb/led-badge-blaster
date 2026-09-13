@@ -23,6 +23,10 @@ Este proyecto sigue [Versionado Semántico](https://semver.org/lang/es/).
   `/api/state`, y la que va a escribir el instalador aparece junto al botón de
   la página pública. Comparar las dos dice si una reinstalación entró.
 
+- Cada envío repite ahora la trama tres veces (`IR_REPEATS`), con `repeat`
+  opcional entre 0 y 9 en `/api/send` y `/api/raw`. El badge duerme el MCU tras
+  ~60 s sin recibir nada y perdía la primera trama al despertar.
+
 ### Corregido
 
 - El doble toque en el panel ya no hace zoom ni arrastra el retardo de ~300 ms

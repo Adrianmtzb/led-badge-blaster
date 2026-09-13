@@ -119,6 +119,16 @@ static void handleState() {
   server.send(200, "application/json", out);
 }
 
+// Repeticiones extra opcionales. Sin el parámetro se usa el valor por defecto,
+// que ya cubre el caso normal de despertar un badge dormido.
+static uint8_t argRepeat() {
+  if (!server.hasArg("repeat")) return IR_REPEATS;
+  const long r = server.arg("repeat").toInt();
+  if (r < 0) return 0;
+  if (r > IR_REPEATS_MAX) return IR_REPEATS_MAX;
+  return (uint8_t)r;
+}
+
 static void handleSend() {
   if (!sameOrigin()) return;
 
@@ -133,7 +143,7 @@ static void handleSend() {
     return;
   }
 
-  if (!appSendAbsolute((uint16_t)idx)) {
+  if (!appSendAbsolute((uint16_t)idx, argRepeat())) {
     server.send(500, "application/json", "{\"error\":\"no se pudo emitir\"}");
     return;
   }
@@ -171,7 +181,7 @@ static void handleRaw() {
     }
   }
 
-  if (!appSendRaw(pronto.c_str())) {
+  if (!appSendRaw(pronto.c_str(), argRepeat())) {
     server.send(400, "application/json", "{\"error\":\"trama PRONTO invalida\"}");
     return;
   }

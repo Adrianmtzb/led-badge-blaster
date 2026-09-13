@@ -143,8 +143,8 @@ el `WebServer` del core ESP32 no lo parsea.
 | `GET` | `/api/commands` | — | Categorías y efectos, con nombre y color |
 | `GET` | `/api/state` | — | Categoría, posición, efecto actual y estado de red |
 | `GET` | `/api/scan` | — | Redes WiFi visibles |
-| `POST` | `/api/send` | `index` (0–66) | `{"ok":true}` |
-| `POST` | `/api/raw` | `pronto` (hex PRONTO) | `{"ok":true}` |
+| `POST` | `/api/send` | `index` (0–66), `repeat` (opc. 0–9) | `{"ok":true}` |
+| `POST` | `/api/raw` | `pronto` (hex PRONTO), `repeat` (opc. 0–9) | `{"ok":true}` |
 | `POST` | `/api/wifi` | `ssid`, `pass` | Guarda y reinicia |
 | `POST` | `/api/forget` | — | Borra credenciales y reinicia |
 
@@ -158,6 +158,19 @@ curl -X POST http://led-badge.local/api/send \
   -H 'X-Requested-With: curl' \
   -d 'index=12'
 ```
+
+### Repeticiones
+
+El badge apaga los LEDs y duerme el MCU tras **unos 60 s sin recibir nada**, y la
+primera trama después de ese reposo se suele perder. Por eso cada envío repite el
+paquete: `repeat=2` (tres envíos) por defecto, que es lo que hacen también el
+botón de la placa y la consola serie. Cada repetición cuesta unos 77 ms de aire,
+medidos contra la placa. El parámetro `repeat` lo ajusta entre 0 y 9; la pestaña
+Canal usa 4, porque ahí perder una trama deja el cambio a medias.
+
+Ojo si tocas esto: el parámetro `repeat` de `sendPronto` en IRremoteESP8266 solo
+repite la *segunda* secuencia del PRONTO, y estas tramas la llevan vacía. La
+repetición tiene que ser un bucle de llamadas, no ese argumento.
 
 `/api/raw` emite una trama que no está en el catálogo. Existe para probar tramas
 nuevas sin recompilar: no cambia la selección ni el color de reposo del LED, y

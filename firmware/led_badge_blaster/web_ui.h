@@ -398,10 +398,12 @@ async function ponerCanal(){
   $('#c-go').disabled=true;
   cmsg('Emitiendo…');
   try{
+    // Más repeticiones que un color suelto: si el badge está dormido, aquí
+    // perder la primera trama deja el cambio a medias, no solo sin destello.
     for(const t of tramas){
       await j('/api/raw',{method:'POST',
         headers:{...H,'Content-Type':'application/x-www-form-urlencoded'},
-        body:new URLSearchParams({pronto:t})});
+        body:new URLSearchParams({pronto:t,repeat:'4'})});
       await new Promise(r=>setTimeout(r,250));   // dejar que el badge procese
     }
     cmsg('Listo: el badge está en el canal '+canal+'.');
