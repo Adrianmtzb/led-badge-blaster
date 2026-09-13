@@ -66,14 +66,13 @@ button{font:inherit;color:inherit;cursor:pointer}
 #canal{border:1px dashed var(--warn);border-radius:var(--r);padding:1rem;margin-top:.4rem}
 #canal .aviso{margin:0 0 1rem;font-size:.84rem;color:var(--warn);line-height:1.45}
 #canal #c-msg{margin:1rem 0 0}
-#canal .campos{display:grid;grid-template-columns:repeat(auto-fit,minmax(9rem,1fr));gap:.8rem}
 #canal label{display:block;font-size:.78rem;color:var(--dim);margin-bottom:.25rem}
-#canal input[type=number]{width:100%}
-#canal .check{display:flex;align-items:center;gap:.5rem;margin:1rem 0 0;font-size:.86rem;color:var(--text)}
-#canal .check input{width:auto;margin:0}
+#canal input[type=number]{width:100%;font-size:1.6rem;text-align:center;padding:.5rem}
 #canal .row{margin-top:1rem}
-#canal .row button{flex:1 1 12rem}
-#canal output{display:block;margin-top:1rem;padding:.6rem;border-radius:8px;
+#canal .row button{flex:1}
+#canal details{margin-top:1rem;font-size:.8rem;color:var(--dim)}
+#canal summary{cursor:pointer}
+#canal output{display:block;margin-top:.6rem;padding:.6rem;border-radius:8px;white-space:pre-wrap;
   background:var(--sunk);color:var(--dim);word-break:break-all;
   font-family:ui-monospace,SFMono-Regular,Menlo,monospace;font-size:.68rem;line-height:1.5}
 #canal .nota{margin:.9rem 0 0;font-size:.78rem;color:var(--dim);line-height:1.45}
@@ -150,35 +149,22 @@ footer p{margin:0 0 .7rem}
     diferencia de los colores, esto no se deshace solo: el cambio sobrevive al
     apagado. Úsalo solo en badges propios.</p>
 
-    <div class="campos">
-      <div>
-        <label for="c-sel">Ranura (group sel)</label>
-        <input id="c-sel" type="number" min="0" max="7" value="0" inputmode="numeric">
-      </div>
-      <div>
-        <label for="c-new">Nuevo group id</label>
-        <input id="c-new" type="number" min="1" max="31" value="1" inputmode="numeric">
-      </div>
-      <div>
-        <label for="c-res">Solo el grupo (0 = todos)</label>
-        <input id="c-res" type="number" min="0" max="31" value="0" inputmode="numeric">
-      </div>
-    </div>
-
-    <label class="check"><input id="c-skip" type="checkbox">Silencioso: no mostrar el color al recibir</label>
+    <label for="c-num">Canal</label>
+    <input id="c-num" type="number" min="1" max="31" value="1" inputmode="numeric">
 
     <div class="row">
-      <button type="button" id="c-write">Escribir group id en la ranura</button>
-      <button type="button" id="c-change">Cambiar el badge a esa ranura</button>
+      <button type="button" id="c-go" class="primary">Poner el badge en este canal</button>
     </div>
 
     <p id="c-msg" class="aviso" hidden></p>
-    <output id="c-frame" hidden></output>
+    <details id="c-det" hidden><summary>Ver las tramas emitidas</summary>
+      <output id="c-frame"></output>
+    </details>
 
-    <p class="nota">Son dos pasos distintos. <b>Escribir</b> guarda el id en la
-    ranura elegida; el badge sigue usando el anterior hasta que reinicia o
-    recibe un <b>cambio de ranura</b>. Un group id de 0 se descarta. La trama se
-    calcula en este navegador y se emite por <code>/api/raw</code>.</p>
+    <p class="nota">Apunta el emisor al badge y pulsa. El badge destella al
+    recibirlo. Afecta a todos los badges que estén a la vista, así que hazlo de
+    uno en uno. Las tramas se calculan en este navegador y salen por
+    <code>/api/raw</code>.</p>
   </section>
 </main>
 
@@ -371,16 +357,21 @@ function toPronto(logical){
 // El byte 0x07 los separa: 1 cambia de ranura, 2 escribe un id en la ranura.
 // El color va en RGB compacto de 12 bits y es lo que destella al recibir.
 const RGB=0xFC00FC;
-function grupoTrama(tipo,sel,nuevo,restrict,silencio){
+
+// El protocolo tiene ocho ranuras de grupo, pero exponerlas no aporta nada a
+// quien solo quiere poner un badge en un canal: usamos siempre la 0.
+const RANURA=0;
+
+function grupoTrama(tipo,canal){
   const r=RGB>>16&255,g=RGB>>8&255,b=RGB&255;
   return toPronto([
     0x0F,
     (r>>4&3)<<4|(g>>4&15),
     (b>>4&15)<<2|(r>>6&3),
-    sel&7,
-    (silencio?32:0)|(tipo===2?nuevo&31:0),
+    RANURA,
+    tipo===2?canal&31:0,
     tipo,
-    restrict&31,
+    0,                      // sin restringir: llega a todos los badges a la vista
   ]);
 }
 
@@ -388,27 +379,38 @@ function grupoTrama(tipo,sel,nuevo,restrict,silencio){
 // desde esta pestaña, así que el canal tiene su propio destino.
 const cmsg=t=>{const m=$('#c-msg');m.textContent=t;m.hidden=!t};
 
-const num=(sel,lo,hi)=>{
-  const v=parseInt($(sel).value,10);
-  return Number.isFinite(v)?Math.min(hi,Math.max(lo,v)):lo;
-};
+// Escribir el id no basta: el badge mantiene en memoria el grupo anterior hasta
+// que reinicia o recibe un cambio de ranura. Por eso van los dos seguidos, que
+// es lo que convierte esto en un solo paso para quien lo usa.
+let canalEnCurso=false;
 
-async function emitirCanal(tipo){
-  const sel=num('#c-sel',0,7),nuevo=num('#c-new',1,31),res=num('#c-res',0,31);
-  const trama=grupoTrama(tipo,sel,nuevo,res,$('#c-skip').checked);
-  const out=$('#c-frame');out.textContent=trama;out.hidden=false;
-  cmsg(tipo===2?'Escribiendo group id…':'Cambiando de ranura…');
+async function ponerCanal(){
+  if(canalEnCurso)return;
+  const v=parseInt($('#c-num').value,10);
+  const canal=Number.isFinite(v)?Math.min(31,Math.max(1,v)):1;
+  $('#c-num').value=canal;
+
+  const tramas=[grupoTrama(2,canal),grupoTrama(1,canal)];
+  $('#c-frame').textContent=tramas.join('\n\n');
+  $('#c-det').hidden=false;
+
+  canalEnCurso=true;
+  $('#c-go').disabled=true;
+  cmsg('Emitiendo…');
   try{
-    await j('/api/raw',{method:'POST',headers:{...H,'Content-Type':'application/x-www-form-urlencoded'},
-                        body:new URLSearchParams({pronto:trama})});
-    cmsg(tipo===2
-      ?'Emitido: group id '+nuevo+' en la ranura '+sel+'. El badge no lo usa hasta que reinicie o cambie de ranura.'
-      :'Emitido: cambio a la ranura '+sel+'.');
-  }catch(e){cmsg('No se pudo emitir. Comprueba la conexión con el dispositivo.')}
+    for(const t of tramas){
+      await j('/api/raw',{method:'POST',
+        headers:{...H,'Content-Type':'application/x-www-form-urlencoded'},
+        body:new URLSearchParams({pronto:t})});
+      await new Promise(r=>setTimeout(r,250));   // dejar que el badge procese
+    }
+    cmsg('Listo: el badge está en el canal '+canal+'.');
+  }catch(e){
+    cmsg('No se pudo emitir. Comprueba la conexión con el dispositivo.');
+  }finally{canalEnCurso=false;$('#c-go').disabled=false}
 }
 
-$('#c-write').onclick=()=>emitirCanal(2);
-$('#c-change').onclick=()=>emitirCanal(1);
+$('#c-go').onclick=ponerCanal;
 
 const level=r=>r>=-55?4:r>=-65?3:r>=-75?2:1;
 

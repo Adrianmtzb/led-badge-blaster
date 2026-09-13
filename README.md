@@ -177,21 +177,21 @@ equipos propios o con permiso, y nunca en un evento en marcha.
 
 ### La pestaña Canal
 
-Reprograma a qué grupo responde un badge. Son dos comandos distintos del
-protocolo, y la pestaña los expone por separado porque hacen cosas distintas:
+Un campo y un botón: escribes el canal (1–31), apuntas al badge y pulsas.
 
-| Botón | Comando | Efecto |
-|---|---|---|
-| Escribir group id en la ranura | `Set Group ID` | Guarda un id nuevo (1–31) en una de las ocho ranuras de la EEPROM |
-| Cambiar el badge a esa ranura | `Set Group Sel` | Cambia qué ranura usa el badge |
+Por debajo son dos comandos del protocolo, y hacen falta los dos: `Set Group ID`
+guarda el canal en la EEPROM del badge, y `Set Group Sel` le hace releerla — sin
+el segundo, el badge sigue con el grupo anterior hasta que reinicie. El panel los
+manda seguidos, por eso es un solo paso. De las ocho ranuras de grupo que tiene
+el protocolo usa siempre la 0, porque exponerlas no aporta nada a quien solo
+quiere poner un badge en un canal.
 
-Escribir un id no basta: el badge conserva en memoria el grupo anterior hasta que
-reinicia o recibe un cambio de ranura. Un group id de 0 se descarta. El campo
-«solo el grupo» restringe a qué badges llega la orden (0 = todos).
+La orden no distingue destinatario: llega a **todos los badges a la vista**, así
+que hazlo de uno en uno.
 
-La trama **se calcula en el navegador**, con el codificador que lleva el propio
-panel, y se emite por `/api/raw`. El firmware no tiene lógica de protocolo: solo
-emite lo que recibe. El codificador está implementado desde la
+Las tramas **se calculan en el navegador**, con el codificador que lleva el
+propio panel, y se emiten por `/api/raw`. El firmware no tiene lógica de
+protocolo: solo emite lo que recibe. El codificador está implementado desde la
 [documentación del protocolo](https://github.com/jamesw343/PixMob_IR/blob/HEAD/docs/ir_protocol.md)
 (MIT, ver [THIRD_PARTY_NOTICES.md](THIRD_PARTY_NOTICES.md)) y se valida
 reproduciendo los 67 presets del catálogo byte a byte.

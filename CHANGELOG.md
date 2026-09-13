@@ -7,8 +7,9 @@ Este proyecto sigue [Versionado Semántico](https://semver.org/lang/es/).
 
 ### Añadido
 
-- Pestaña **Canal** en el panel: reprograma a qué grupo responde un badge, con
-  los comandos `Set Group ID` y `Set Group Sel`. Va marcada como avanzada y
+- Pestaña **Canal** en el panel: un campo y un botón para poner un badge en un
+  canal. Por debajo encadena `Set Group ID` y `Set Group Sel`, que hacen falta
+  los dos: sin el segundo el badge sigue con el grupo anterior. Va marcada y
   separada del catálogo porque escribe memoria persistente del badge. La trama la
   calcula el propio panel en el navegador y sale por `/api/raw`; el firmware
   sigue sin lógica de protocolo. El codificador está implementado desde la
