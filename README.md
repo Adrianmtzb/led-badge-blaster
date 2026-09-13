@@ -159,6 +159,16 @@ curl -X POST http://led-badge.local/api/send \
   -d 'index=12'
 ```
 
+### Por qué se habilita IPv6
+
+`WiFi.enableIPv6(true)` en la conexión STA no está para usar IPv6, sino para que
+`led-badge.local` resuelva rápido. Sin él, el responder mDNS publica el registro
+`A` pero deja la consulta `AAAA` **sin ninguna respuesta**, ni siquiera negativa.
+Los clientes preguntan por ambas a la vez y esperan el timeout completo del
+resolutor antes de usar la IPv4 que ya tenían: medido en macOS, 5,01 s en cada
+petición por nombre. Con IPv6 activo el ESP32 contesta con su dirección
+link-local y la resolución baja a ~10 ms. Por IP nunca hubo penalización.
+
 ### Repeticiones
 
 El badge apaga los LEDs y duerme el MCU tras **unos 60 s sin recibir nada**, y la

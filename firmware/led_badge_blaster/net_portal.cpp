@@ -46,6 +46,12 @@ static bool startSta(const String& ssid, const String& pass) {
 
   WiFi.mode(WIFI_STA);
   WiFi.setSleep(false);
+
+  // Sin IPv6, mDNS publica el registro A pero deja la consulta AAAA sin
+  // respuesta. Los clientes preguntan las dos a la vez y se comen el timeout
+  // entero del resolutor (5 s en macOS) antes de usar la IPv4 que ya tenían.
+  WiFi.enableIPv6(true);
+
   WiFi.begin(ssid.c_str(), pass.c_str());
 
   const uint32_t deadline = millis() + WIFI_CONNECT_TIMEOUT_MS;

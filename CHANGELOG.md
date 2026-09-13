@@ -29,6 +29,13 @@ Este proyecto sigue [Versionado Semántico](https://semver.org/lang/es/).
 
 ### Corregido
 
+- `led-badge.local` tardaba 5 s en resolver en cada petición. El responder mDNS
+  publicaba el registro `A` pero dejaba la consulta `AAAA` sin respuesta, y los
+  clientes esperaban el timeout entero del resolutor antes de usar la IPv4 que ya
+  tenían. Habilitar IPv6 en la conexión STA hace que el ESP32 conteste con su
+  dirección link-local: la resolución pasa de 5,01 s a ~10 ms. Por IP directa
+  nunca hubo penalización.
+
 - El doble toque en el panel ya no hace zoom ni arrastra el retardo de ~300 ms
   que el navegador espera para distinguirlo de un toque simple
   (`touch-action: manipulation`). El zoom con dos dedos sigue funcionando.
