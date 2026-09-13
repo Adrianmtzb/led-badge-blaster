@@ -25,10 +25,12 @@ las instrucciones:
 > **No lo uses en eventos en directo**, ni para interferir con espectáculos,
 > equipos de recinto o dispositivos de otras personas.
 
-El firmware solo envía tramas de color único: enciende un badge con un color y
-una envolvente. No escribe configuración, no toca EEPROM y no cambia el grupo de
-ningún dispositivo. Se publica sin garantía de ningún tipo; verifica siempre con
-tu propio hardware.
+Los 67 efectos del catálogo son tramas de color único: encienden un badge con un
+color y una envolvente, y no dejan rastro al apagarlo. Aparte va la pestaña
+**Canal**, que sí **escribe en la EEPROM del badge** para cambiar a qué grupo
+responde. Está separada del catálogo y marcada como avanzada precisamente porque
+ese cambio es permanente. Se publica sin garantía de ningún tipo; verifica
+siempre con tu propio hardware.
 
 ---
 
@@ -39,6 +41,8 @@ tu propio hardware.
   `ESCENAS` (13) y `GRUPOS` (5).
 - **Panel con los colores a la vista.** Se elige el efecto por su color, no por
   un número; el LED de la placa muestra el que está seleccionado.
+- **Pestaña Canal (avanzada)**: reprograma el grupo al que responde un badge.
+  Escribe memoria persistente, así que va aparte de los colores.
 - **Portal cautivo**: sin credenciales guardadas crea la red `LED-Badge-XXXX` y
   abre solo el panel al conectarte.
 - **Modo red**: si le das tu WiFi, se une a ella y queda en `http://led-badge.local`.
@@ -170,6 +174,31 @@ curl -X POST http://led-badge.local/api/raw \
 Emitir tramas arbitrarias amplía lo que el dispositivo puede hacer más allá del
 catálogo, así que aplica igual el [uso aceptable](#uso-aceptable): sólo con
 equipos propios o con permiso, y nunca en un evento en marcha.
+
+### La pestaña Canal
+
+Reprograma a qué grupo responde un badge. Son dos comandos distintos del
+protocolo, y la pestaña los expone por separado porque hacen cosas distintas:
+
+| Botón | Comando | Efecto |
+|---|---|---|
+| Escribir group id en la ranura | `Set Group ID` | Guarda un id nuevo (1–31) en una de las ocho ranuras de la EEPROM |
+| Cambiar el badge a esa ranura | `Set Group Sel` | Cambia qué ranura usa el badge |
+
+Escribir un id no basta: el badge conserva en memoria el grupo anterior hasta que
+reinicia o recibe un cambio de ranura. Un group id de 0 se descarta. El campo
+«solo el grupo» restringe a qué badges llega la orden (0 = todos).
+
+La trama **se calcula en el navegador**, con el codificador que lleva el propio
+panel, y se emite por `/api/raw`. El firmware no tiene lógica de protocolo: solo
+emite lo que recibe. El codificador está implementado desde la
+[documentación del protocolo](https://github.com/jamesw343/PixMob_IR/blob/HEAD/docs/ir_protocol.md)
+(MIT, ver [THIRD_PARTY_NOTICES.md](THIRD_PARTY_NOTICES.md)) y se valida
+reproduciendo los 67 presets del catálogo byte a byte.
+
+> [!WARNING]
+> Este cambio **sobrevive al apagado del badge**. A diferencia de los colores, no
+> se deshace solo. Úsalo únicamente con badges propios.
 
 `/api/wifi` y `/api/forget` responden y **reinician 1,2 s después**, así que la
 conexión se corta: el cliente suele estar hablando por el AP que se va a tumbar.

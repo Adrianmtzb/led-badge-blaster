@@ -58,6 +58,25 @@ button{font:inherit;color:inherit;cursor:pointer}
   background:var(--panel);font-size:.88rem;white-space:nowrap;
 }
 #tabs button[aria-selected=true]{background:var(--text);border-color:var(--text);color:var(--ink);font-weight:600}
+#tabs button.adv{border-style:dashed;color:var(--warn)}
+#tabs button.adv[aria-selected=true]{background:var(--warn);border-color:var(--warn);color:#000}
+
+/* --- avanzado: escribe memoria persistente, va aparte del catálogo --- */
+[hidden]{display:none!important}
+#canal{border:1px dashed var(--warn);border-radius:var(--r);padding:1rem;margin-top:.4rem}
+#canal .aviso{margin:0 0 1rem;font-size:.84rem;color:var(--warn);line-height:1.45}
+#canal #c-msg{margin:1rem 0 0}
+#canal .campos{display:grid;grid-template-columns:repeat(auto-fit,minmax(9rem,1fr));gap:.8rem}
+#canal label{display:block;font-size:.78rem;color:var(--dim);margin-bottom:.25rem}
+#canal input[type=number]{width:100%}
+#canal .check{display:flex;align-items:center;gap:.5rem;margin:1rem 0 0;font-size:.86rem;color:var(--text)}
+#canal .check input{width:auto;margin:0}
+#canal .row{margin-top:1rem}
+#canal .row button{flex:1 1 12rem}
+#canal output{display:block;margin-top:1rem;padding:.6rem;border-radius:8px;
+  background:var(--sunk);color:var(--dim);word-break:break-all;
+  font-family:ui-monospace,SFMono-Regular,Menlo,monospace;font-size:.68rem;line-height:1.5}
+#canal .nota{margin:.9rem 0 0;font-size:.78rem;color:var(--dim);line-height:1.45}
 #blurb{margin:.8rem 0 1rem;font-size:.85rem;color:var(--dim);max-width:52ch}
 
 /* --- rejilla de efectos: el color ocupa casi todo el botón --- */
@@ -125,6 +144,42 @@ footer p{margin:0 0 .7rem}
   <nav id="tabs" aria-label="Categorías"></nav>
   <p id="blurb"></p>
   <div id="grid"></div>
+
+  <section id="canal" hidden>
+    <p class="aviso"><b>Escribe en la memoria persistente del badge.</b> A
+    diferencia de los colores, esto no se deshace solo: el cambio sobrevive al
+    apagado. Úsalo solo en badges propios.</p>
+
+    <div class="campos">
+      <div>
+        <label for="c-sel">Ranura (group sel)</label>
+        <input id="c-sel" type="number" min="0" max="7" value="0" inputmode="numeric">
+      </div>
+      <div>
+        <label for="c-new">Nuevo group id</label>
+        <input id="c-new" type="number" min="1" max="31" value="1" inputmode="numeric">
+      </div>
+      <div>
+        <label for="c-res">Solo el grupo (0 = todos)</label>
+        <input id="c-res" type="number" min="0" max="31" value="0" inputmode="numeric">
+      </div>
+    </div>
+
+    <label class="check"><input id="c-skip" type="checkbox">Silencioso: no mostrar el color al recibir</label>
+
+    <div class="row">
+      <button type="button" id="c-write">Escribir group id en la ranura</button>
+      <button type="button" id="c-change">Cambiar el badge a esa ranura</button>
+    </div>
+
+    <p id="c-msg" class="aviso" hidden></p>
+    <output id="c-frame" hidden></output>
+
+    <p class="nota">Son dos pasos distintos. <b>Escribir</b> guarda el id en la
+    ranura elegida; el badge sigue usando el anterior hasta que reinicia o
+    recibe un <b>cambio de ranura</b>. Un group id de 0 se descarta. La trama se
+    calcula en este navegador y se emite por <code>/api/raw</code>.</p>
+  </section>
 </main>
 
 <details>
@@ -184,21 +239,34 @@ function paintLive(){
     :'Portal propio '+n.ssid+', responde en '+n.ip;
 }
 
+// El catálogo y el canal no son lo mismo: los colores son efímeros y el canal
+// escribe EEPROM, así que la pestaña va marcada aparte y no sale del catálogo.
+const CANAL='@canal';
+
 function drawTabs(){
   const nav=$('#tabs');nav.textContent='';
-  for(const c of cats){
+  const add=(key,label,adv)=>{
     const b=document.createElement('button');
-    b.textContent=c.label;
-    b.setAttribute('aria-selected',c.key===tab);
-    b.onclick=()=>{tab=c.key;drawTabs();drawGrid()};
+    b.textContent=label;
+    if(adv)b.className='adv';
+    b.setAttribute('aria-selected',key===tab);
+    b.onclick=()=>{tab=key;drawTabs();drawGrid()};
     nav.appendChild(b);
-  }
+  };
+  for(const c of cats)add(c.key,c.label,false);
+  add(CANAL,'Canal',true);
+
   const c=cats.find(c=>c.key===tab);
-  $('#blurb').textContent=c?c.blurb:'';
+  $('#blurb').textContent=tab===CANAL
+    ?'Avanzado. Reprograma a qué grupo responde un badge.'
+    :(c?c.blurb:'');
 }
 
 function drawGrid(){
   const g=$('#grid');g.textContent='';
+  $('#canal').hidden=tab!==CANAL;
+  g.hidden=tab===CANAL;
+  if(tab===CANAL)return;
   for(const c of cmds){
     if(c.mode!==tab)continue;
     const b=document.createElement('button');
@@ -265,6 +333,82 @@ function drawVersion(){
   b.textContent=st.version?'v'+st.version:'desconocida';
   el.appendChild(b);
 }
+
+// --- codificador PixMob -------------------------------------------------
+// Implementado desde la documentación del protocolo (jamesw343/PixMob_IR, MIT),
+// no copiado de su código. La trama se calcula aquí, en el navegador: el
+// firmware sigue sin lógica de protocolo y solo emite lo que recibe en
+// /api/raw. Validado reproduciendo los 67 presets del catálogo byte a byte.
+const TBL=(()=>{const h='21325465a99a6d295692a1b4b284662a4c6aa6956251422435468aac8c6c2c4a'
+  +'5986a4a2916455442231b1528596a5695a2d4d894534612536ad94aa8d499926';
+  return Array.from({length:64},(_,k)=>parseInt(h.substr(k*2,2),16))})();
+
+const CELL=26.5;      // celda T, en ciclos de portadora
+const TAIL=0x076D;    // silencio final entre paquetes, ~50 ms
+
+function toPronto(logical){
+  // Solo se usan los 6 bits bajos de cada byte a partir del 0x02; el magic no
+  // se sustituye y el checksum se calcula sobre los bytes ya sustituidos.
+  const e=[0x80,0,...logical.map(b=>TBL[b&63])];
+  let sum=0;for(let k=2;k<e.length;k++)sum=(sum+e[k])&255;
+  e[1]=TBL[(sum>>2)&63];
+
+  let bits='';
+  for(const b of e)bits+=b.toString(2).padStart(8,'0').split('').reverse().join('');
+  bits=bits.replace(/^0+|0+$/g,'');   // los ceros de guarda no son distinguibles
+
+  const w=[];let n=1;
+  for(let k=1;k<=bits.length;k++){
+    if(bits[k]===bits[k-1]){n++;continue}
+    w.push(Math.floor(n*CELL+0.5));n=1;
+  }
+  if(w.length%2)w.push(TAIL);         // cerrar el último par MARK/SPACE
+  return [0,0x6D,w.length>>1,0,...w]
+    .map(x=>x.toString(16).toUpperCase().padStart(4,'0')).join(' ');
+}
+
+// Ambos comandos de grupo comparten cuerpo: type=0b111 y onstrt=1 -> flags 0x0F.
+// El byte 0x07 los separa: 1 cambia de ranura, 2 escribe un id en la ranura.
+// El color va en RGB compacto de 12 bits y es lo que destella al recibir.
+const RGB=0xFC00FC;
+function grupoTrama(tipo,sel,nuevo,restrict,silencio){
+  const r=RGB>>16&255,g=RGB>>8&255,b=RGB&255;
+  return toPronto([
+    0x0F,
+    (r>>4&3)<<4|(g>>4&15),
+    (b>>4&15)<<2|(r>>6&3),
+    sel&7,
+    (silencio?32:0)|(tipo===2?nuevo&31:0),
+    tipo,
+    restrict&31,
+  ]);
+}
+
+// El #msg del formulario de red está dentro de un <details> plegado y no se ve
+// desde esta pestaña, así que el canal tiene su propio destino.
+const cmsg=t=>{const m=$('#c-msg');m.textContent=t;m.hidden=!t};
+
+const num=(sel,lo,hi)=>{
+  const v=parseInt($(sel).value,10);
+  return Number.isFinite(v)?Math.min(hi,Math.max(lo,v)):lo;
+};
+
+async function emitirCanal(tipo){
+  const sel=num('#c-sel',0,7),nuevo=num('#c-new',1,31),res=num('#c-res',0,31);
+  const trama=grupoTrama(tipo,sel,nuevo,res,$('#c-skip').checked);
+  const out=$('#c-frame');out.textContent=trama;out.hidden=false;
+  cmsg(tipo===2?'Escribiendo group id…':'Cambiando de ranura…');
+  try{
+    await j('/api/raw',{method:'POST',headers:{...H,'Content-Type':'application/x-www-form-urlencoded'},
+                        body:new URLSearchParams({pronto:trama})});
+    cmsg(tipo===2
+      ?'Emitido: group id '+nuevo+' en la ranura '+sel+'. El badge no lo usa hasta que reinicie o cambie de ranura.'
+      :'Emitido: cambio a la ranura '+sel+'.');
+  }catch(e){cmsg('No se pudo emitir. Comprueba la conexión con el dispositivo.')}
+}
+
+$('#c-write').onclick=()=>emitirCanal(2);
+$('#c-change').onclick=()=>emitirCanal(1);
 
 const level=r=>r>=-55?4:r>=-65?3:r>=-75?2:1;
 

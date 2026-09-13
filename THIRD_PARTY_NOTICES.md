@@ -51,7 +51,13 @@ SOFTWARE.
 - **Documento:** `docs/ir_protocol.md`
 - **Licencia:** MIT
 - **Uso aquí:** documentación del comando configurable de 9 bytes (attack,
-  sustain, release, chance, grupo) y de las capturas de referencia.
+  sustain, release, chance, grupo) y de las capturas de referencia. También la
+  del pipeline de codificación (tabla de sustitución de 64 entradas, checksum,
+  serialización LSB-first) y la de los comandos `Set Group ID` y
+  `Set Group Sel`, que usa la pestaña Canal del panel.
+- **Nota:** el codificador de `web_ui.h` está **implementado desde ese
+  documento**, no copiado del código de PixMob_IR. Se verifica reproduciendo los
+  67 presets del catálogo byte a byte.
 
 ```
 MIT License

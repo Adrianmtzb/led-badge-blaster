@@ -7,6 +7,13 @@ Este proyecto sigue [Versionado Semántico](https://semver.org/lang/es/).
 
 ### Añadido
 
+- Pestaña **Canal** en el panel: reprograma a qué grupo responde un badge, con
+  los comandos `Set Group ID` y `Set Group Sel`. Va marcada como avanzada y
+  separada del catálogo porque escribe memoria persistente del badge. La trama la
+  calcula el propio panel en el navegador y sale por `/api/raw`; el firmware
+  sigue sin lógica de protocolo. El codificador está implementado desde la
+  documentación de `jamesw343/PixMob_IR` (MIT) y se valida reproduciendo los 67
+  presets del catálogo byte a byte.
 - `POST /api/raw` y el comando serie `raw <trama>` emiten una trama PRONTO que
   no está en el catálogo, para probar tramas nuevas sin recompilar. Validan
   longitud y juego de caracteres, van detrás del mismo `X-Requested-With` que el
