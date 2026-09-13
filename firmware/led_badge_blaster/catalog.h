@@ -18,8 +18,10 @@ static const uint8_t MODE_COUNT = 6;
 
 struct Command {
   const char* id;      // identificador estable: CAP_00, BAS_03…
-  const char* name;    // nombre legible: "Rojo"
+  const char* name;    // nombre legible en español: "Rojo"
+  const char* nameEn;  // el mismo, en inglés: "Red"
   const char* note;    // detalle corto, puede ser cadena vacía
+  const char* noteEn;  // el mismo, en inglés
   uint32_t    rgb;     // color ya cuantizado por el badge, 0xRRGGBB
   const char* pronto;  // PRONTO_HEX
   Mode        mode;
@@ -27,8 +29,10 @@ struct Command {
 
 struct CategoryInfo {
   const char* key;    // nombre del modo en la API: "CAPTURAS"
-  const char* label;  // nombre para mostrar
-  const char* blurb;  // una línea de contexto
+  const char* label;    // nombre para mostrar
+  const char* labelEn;  // el mismo, en inglés
+  const char* blurb;    // una línea de contexto
+  const char* blurbEn;  // la misma, en inglés
 };
 
 extern const Command COMMANDS[];

@@ -57,7 +57,7 @@ static void handleCommands() {
   // ~100 B por comando. Reservar de una vez evita que String crezca a
   // realloc por realloc y fragmente el heap con el catálogo entero.
   String out;
-  out.reserve(128 * COMMAND_COUNT);
+  out.reserve(200 * COMMAND_COUNT);
   out += "{\"categories\":[";
   for (uint8_t m = 0; m < MODE_COUNT; m++) {
     if (m) out += ',';
@@ -65,8 +65,12 @@ static void handleCommands() {
     out += CATEGORIES[m].key;
     out += "\",\"label\":\"";
     out += jsonEscape(CATEGORIES[m].label);
+    out += "\",\"labelEn\":\"";
+    out += jsonEscape(CATEGORIES[m].labelEn);
     out += "\",\"blurb\":\"";
     out += jsonEscape(CATEGORIES[m].blurb);
+    out += "\",\"blurbEn\":\"";
+    out += jsonEscape(CATEGORIES[m].blurbEn);
     out += "\",\"count\":";
     out += catalogCount((Mode)m);
     out += '}';
@@ -82,8 +86,12 @@ static void handleCommands() {
     out += COMMANDS[i].id;
     out += "\",\"name\":\"";
     out += jsonEscape(COMMANDS[i].name);
+    out += "\",\"nameEn\":\"";
+    out += jsonEscape(COMMANDS[i].nameEn);
     out += "\",\"note\":\"";
     out += jsonEscape(COMMANDS[i].note);
+    out += "\",\"noteEn\":\"";
+    out += jsonEscape(COMMANDS[i].noteEn);
     out += "\",\"color\":\"";
     out += hex;
     out += "\",\"mode\":\"";

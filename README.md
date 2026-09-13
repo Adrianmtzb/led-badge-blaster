@@ -41,6 +41,8 @@ siempre con tu propio hardware.
   `ESCENAS` (13) y `GRUPOS` (5).
 - **Panel con los colores a la vista.** Se elige el efecto por su color, no por
   un número; el LED de la placa muestra el que está seleccionado.
+- **Panel bilingüe** español / inglés, incluidos los nombres de los 67 efectos.
+  Arranca en el idioma del navegador y recuerda el que elijas.
 - **Pestaña Canal (avanzada)**: reprograma el grupo al que responde un badge.
   Escribe memoria persistente, así que va aparte de los colores.
 - **Portal cautivo**: sin credenciales guardadas crea la red `LED-Badge-XXXX` y
@@ -158,6 +160,17 @@ curl -X POST http://led-badge.local/api/send \
   -H 'X-Requested-With: curl' \
   -d 'index=12'
 ```
+
+### Idiomas
+
+El panel está en español e inglés. Las cadenas de la interfaz viven en el propio
+`web_ui.h`; los nombres de efectos y categorías se generan desde
+`data/i18n/en.json` y llegan en ambos idiomas por `/api/commands`.
+
+Toda cadena visible del catálogo necesita entrada en `data/i18n/en.json`: si
+añades un preset y olvidas su traducción, `make check-catalog` falla nombrándola.
+Las cadenas que no cambian (identificadores como `P_PULSO_07`, porcentajes) se
+repiten a propósito, para que la ausencia signifique siempre un olvido.
 
 ### Por qué se habilita IPv6
 

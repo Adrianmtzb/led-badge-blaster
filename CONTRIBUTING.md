@@ -96,6 +96,10 @@ producto de PixMob. Al contribuir, respeta esto:
 - No se añade firmware extraído, volcados de flash ni código propietario.
 - El aviso de uso aceptable vive en el README, en `web_ui.h` y en
   `docs/index.html`. Si rediseñas una de las páginas, tiene que seguir estando.
+- Todo nombre o nota que añadas a `data/presets/` necesita su traducción en
+  `data/i18n/en.json`. `make check-catalog` falla si falta. Las cadenas que no
+  cambian entre idiomas se repiten a propósito: así la ausencia es siempre un
+  olvido, no una decisión.
 - Los comandos persistentes (EEPROM, cambio de grupo, reset) no se mezclan con
   los colores: si se añaden, van en una sección marcada como avanzada.
 

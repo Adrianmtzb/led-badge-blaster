@@ -27,9 +27,13 @@ producto de PixMob. Eso tiene consecuencias concretas en el código:
 - El aviso de uso aceptable está en el README, en `web_ui.h` y en
   `docs/index.html`. Si rediseñas alguna de las dos páginas, tiene que seguir
   estando.
-- Todos los comandos son tramas de color único. Si algún día se añaden comandos
-  persistentes (EEPROM, cambio de grupo, reset), van en una sección aparte
-  marcada como avanzada, no mezclados con los colores.
+- Los 67 comandos del catálogo son tramas de color único. Los persistentes
+  (EEPROM, cambio de grupo, reset) van en una sección aparte marcada como
+  avanzada, nunca mezclados con los colores: hoy es la pestaña Canal del panel.
+  Si añades más, misma regla.
+- Toda cadena visible del catálogo necesita su traducción en `data/i18n/en.json`.
+  `make check-catalog` falla nombrando la que falte. Las que no cambian entre
+  idiomas se repiten a propósito, para que la ausencia sea siempre un olvido.
 
 ## El catálogo es generado
 
@@ -56,7 +60,8 @@ arduino-cli upload  --fqbn m5stack:esp32:m5stack_atom -p /dev/cu.usbserial-XXXX 
 - Si la subida falla con *port is busy*, hay un monitor serie abierto. En VS Code
   se ve con `lsof /dev/cu.usbserial-*` como proceso `serial-mo`. Hay que pedirle
   al usuario que lo cierre; no se puede resolver desde el agente.
-- Ocupación actual: ~33 % de flash y ~14 % de RAM, con los 67 efectos dentro.
+- Ocupación actual: ~34 % de flash y ~14 % de RAM, con los 67 efectos en los dos
+  idiomas dentro.
 
 ## Trampas ya pagadas
 
