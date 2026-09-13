@@ -11,6 +11,9 @@ Este proyecto sigue [Versionado Semántico](https://semver.org/lang/es/).
   categorías incluidos. Arranca en el idioma del navegador, se cambia con un
   botón en el pie y recuerda la elección. Las traducciones del catálogo salen de
   `data/i18n/en.json` y `make check-catalog` falla si falta alguna.
+  La página pública de `docs/` va igual: arranca en el idioma del navegador,
+  recuerda la elección y traduce también los nombres del catálogo que lee de
+  `docs/catalog.json`.
 
 - Pestaña **Canal** en el panel: un campo y un botón para poner un badge en un
   canal. Por debajo encadena `Set Group ID` y `Set Group Sel`, que hacen falta

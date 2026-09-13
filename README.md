@@ -172,6 +172,11 @@ añades un preset y olvidas su traducción, `make check-catalog` falla nombránd
 Las cadenas que no cambian (identificadores como `P_PULSO_07`, porcentajes) se
 repiten a propósito, para que la ausencia signifique siempre un olvido.
 
+La página pública de `docs/` también está en los dos idiomas. Ahí la prosa lleva
+`<code>`, `<b>` y enlaces dentro, así que en vez de sustituir texto el marcado
+tiene las dos versiones y CSS oculta la que no toca. La descripción para
+buscadores no se puede alternar y va bilingüe en la misma línea.
+
 ### Por qué se habilita IPv6
 
 `WiFi.enableIPv6(true)` en la conexión STA no está para usar IPv6, sino para que

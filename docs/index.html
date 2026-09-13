@@ -5,7 +5,9 @@
 <meta name="viewport" content="width=device-width,initial-scale=1">
 <meta name="color-scheme" content="dark light">
 <title>LED Badge Blaster · instalador</title>
-<meta name="description" content="Firmware libre para M5Stack ATOM Lite que emite 67 efectos de color por infrarrojos a badges LED compatibles con PixMob. Se instala desde el navegador.">
+<!-- La descripcion la leen buscadores, no el visitante: no se puede alternar
+     con el boton de idioma, asi que lleva las dos lenguas en la misma linea. -->
+<meta name="description" content="Firmware libre para M5Stack ATOM Lite que emite 67 efectos de color por infrarrojos a badges LED compatibles con PixMob. Se instala desde el navegador. — Open firmware for the M5Stack ATOM Lite: 67 infrared colour effects for PixMob-compatible LED badges, installed from the browser.">
 <link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 32 32'><rect width='32' height='32' rx='7' fill='%23f05000'/></svg>">
 <script type="module" src="https://unpkg.com/esp-web-tools@10/dist/web/install-button.js?module"></script>
 <style>
@@ -18,6 +20,16 @@
         --text:#141821; --dim:#5f6779; --warn:#8a4f00}
 }
 *{box-sizing:border-box}
+
+/* Dos idiomas en el marcado: se alterna con CSS para no perder el <code>,
+   <b> y <a> que lleva la prosa dentro. */
+html[lang=es] [lang=en],
+html[lang=en] [lang=es]{display:none}
+#lang{position:fixed;top:.7rem;right:.7rem;z-index:9;
+  padding:.32rem .75rem;border:1px solid var(--line);border-radius:999px;
+  background:var(--panel);color:inherit;font:inherit;font-size:.74rem;
+  letter-spacing:.04em;cursor:pointer}
+#lang:hover{border-color:var(--brand)}
 html{-webkit-text-size-adjust:100%;scroll-behavior:smooth}
 body{
   margin:0;background:var(--ink);color:var(--text);
@@ -114,40 +126,54 @@ footer p:last-child{margin:0}
 </head>
 <body>
 
+<button id="lang" type="button" hidden>English</button>
+
 <div id="strip" aria-hidden="true"></div>
 
 <div class="wrap">
   <header>
     <h1>LED Badge Blaster</h1>
-    <p class="lede">Un <b>M5Stack ATOM Lite</b> convertido en mando de
+    <p class="lede" lang="es">Un <b>M5Stack ATOM Lite</b> convertido en mando de
       infrarrojos: 67 efectos de color para badges LED compatibles con PixMob,
       elegidos desde el móvil.</p>
+    <p class="lede" lang="en">An <b>M5Stack ATOM Lite</b> turned into an infrared
+      remote: 67 color effects for PixMob-compatible LED badges, picked from your
+      phone.</p>
 
     <div class="cta">
       <esp-web-install-button manifest="manifest.json">
-        <button slot="activate">Instalar en mi ATOM Lite</button>
+        <button slot="activate"><span lang="es">Instalar en mi ATOM Lite</span><span lang="en">Install on my ATOM Lite</span></button>
         <span slot="unsupported" class="nope">
-          Este navegador no implementa Web Serial. Abre la página en Chrome o
-          Edge de escritorio para instalar.
+          <span lang="es">Este navegador no implementa Web Serial. Abre la página
+            en Chrome o Edge de escritorio para instalar.</span>
+          <span lang="en">This browser does not implement Web Serial. Open the
+            page in desktop Chrome or Edge to install.</span>
         </span>
         <span slot="not-allowed" class="nope">
-          Web Serial solo funciona sobre HTTPS o en localhost.
+          <span lang="es">Web Serial solo funciona sobre HTTPS o en localhost.</span>
+          <span lang="en">Web Serial only works over HTTPS or on localhost.</span>
         </span>
       </esp-web-install-button>
-      <span class="req"><b id="ver">&nbsp;</b>Chrome o Edge de escritorio, con el cable USB puesto.</span>
+      <span class="req"><b id="ver">&nbsp;</b><span lang="es">Chrome o Edge de escritorio, con el cable USB puesto.</span><span lang="en">Desktop Chrome or Edge, with the USB cable plugged in.</span></span>
     </div>
 
-    <p class="mark">Proyecto independiente de la comunidad, compatible con
+    <p class="mark" lang="es">Proyecto independiente de la comunidad, compatible con
       badges PixMob. No está afiliado ni respaldado por PixMob / Eski&nbsp;Inc.
       PixMob es una marca de su titular y se menciona solo para describir
       compatibilidad.</p>
+    <p class="mark" lang="en">Independent community project, compatible with
+      PixMob badges. Not affiliated with or endorsed by PixMob / Eski&nbsp;Inc.
+      PixMob is a trademark of its owner and is named only to describe
+      compatibility.</p>
   </header>
 
   <section id="instalar">
-    <h2>Instalar</h2>
-    <p>El firmware se descarga en tu navegador y se escribe directo al
+    <h2 lang="es">Instalar</h2><h2 lang="en">Install</h2>
+    <p lang="es">El firmware se descarga en tu navegador y se escribe directo al
       dispositivo por Web Serial. No pasa por ningún servidor.</p>
-    <ol class="steps">
+    <p lang="en">The firmware downloads into your browser and is written straight
+      to the device over Web Serial. It never goes through a server.</p>
+    <ol class="steps" lang="es">
       <li><strong>Conecta el ATOM Lite por USB.</strong>
         <p>El cable de datos que venía con la placa; algunos cables de carga no llevan datos.</p></li>
       <li><strong>Cierra el monitor serie.</strong>
@@ -157,13 +183,25 @@ footer p:last-child{margin:0}
           panel muestra abajo la versión que quedó instalada, para comprobar que
           coincide con la de aquí.</p></li>
     </ol>
+    <ol class="steps" lang="en">
+      <li><strong>Plug the ATOM Lite in over USB.</strong>
+        <p>The data cable that came with the board; some charging cables carry no data.</p></li>
+      <li><strong>Close the serial monitor.</strong>
+        <p>If the Arduino IDE or a <code>screen</code> holds the port open, the install fails.</p></li>
+      <li><strong>Press Install and pick the <code>usbserial</code> port.</strong>
+        <p>It takes under a minute. When it finishes, the device boots on its own.
+          The panel shows the installed version at the bottom, so you can check it
+          matches the one here.</p></li>
+    </ol>
   </section>
 
   <section id="empezar">
-    <h2>Primer arranque</h2>
-    <p>El cable ya no hace falta: el dispositivo levanta su propia red WiFi y
+    <h2 lang="es">Primer arranque</h2><h2 lang="en">First boot</h2>
+    <p lang="es">El cable ya no hace falta: el dispositivo levanta su propia red WiFi y
       sirve el panel de control.</p>
-    <ol class="steps">
+    <p lang="en">You can unplug the cable now: the device brings up its own WiFi
+      network and serves the control panel.</p>
+    <ol class="steps" lang="es">
       <li><strong>Conéctate a la red <code>LED-Badge-XXXX</code>.</strong>
         <p>La clave es <code>ledbadge</code>. Las X son los últimos bytes de su MAC.</p></li>
       <li><strong>El panel se abre solo.</strong>
@@ -172,31 +210,53 @@ footer p:last-child{margin:0}
         <p>En <em>Red y ajustes</em> puedes darle tu WiFi; luego responde en
           <code>http://led-badge.local</code>.</p></li>
     </ol>
+    <ol class="steps" lang="en">
+      <li><strong>Join the <code>LED-Badge-XXXX</code> network.</strong>
+        <p>The key is <code>ledbadge</code>. The Xs are the last bytes of its MAC.</p></li>
+      <li><strong>The panel opens by itself.</strong>
+        <p>If your phone does not catch it, go to <code>http://192.168.4.1</code>.</p></li>
+      <li><strong>Tap a color and it is already transmitting.</strong>
+        <p>Under <em>Network and settings</em> you can give it your WiFi; after that
+          it answers at <code>http://led-badge.local</code>.</p></li>
+    </ol>
 
-    <h3>El botón de la placa</h3>
-    <dl class="gestures">
+    <h3 lang="es">El botón de la placa</h3><h3 lang="en">The button on the board</h3>
+    <dl class="gestures" lang="es">
       <dt>Clic</dt><dd>Emite el efecto actual y avanza al siguiente.</dd>
       <dt>Doble clic</dt><dd>Cambia de categoría.</dd>
       <dt>Mantener 3 s</dt><dd>Olvida el WiFi y vuelve al portal.</dd>
       <dt>LED de estado</dt><dd>Muestra el color del efecto seleccionado. Destella
         en blanco al emitir y en magenta al borrar las credenciales.</dd>
     </dl>
+    <dl class="gestures" lang="en">
+      <dt>Click</dt><dd>Sends the current effect and moves to the next one.</dd>
+      <dt>Double click</dt><dd>Switches category.</dd>
+      <dt>Hold 3 s</dt><dd>Forgets the WiFi and goes back to the portal.</dd>
+      <dt>Status LED</dt><dd>Shows the color of the selected effect. Flashes white
+        when transmitting and magenta when the credentials are cleared.</dd>
+    </dl>
   </section>
 
   <section id="catalogo">
-    <h2>El catálogo</h2>
-    <p>Todos los efectos son tramas de color único: encienden el badge con un
+    <h2 lang="es">El catálogo</h2><h2 lang="en">The catalog</h2>
+    <p lang="es">Todos los efectos son tramas de color único: encienden el badge con un
       color y una envolvente, y no dejan rastro al apagarlo. Aparte, el panel
       lleva una pestaña avanzada, <b>Canal</b>, que sí escribe en la EEPROM del
       badge para cambiar a qué grupo responde: ese cambio es permanente y por eso
       va separado del catálogo.</p>
+    <p lang="en">Every effect is a single-color frame: it lights the badge with one
+      color and an envelope, and leaves no trace once it is powered off. Separately,
+      the panel carries an advanced tab, <b>Channel</b>, which does write to the
+      badge's EEPROM to change which group it responds to: that change is
+      permanent, which is why it is kept apart from the catalog.</p>
     <div id="cats"></div>
   </section>
 
   <section id="uso-aceptable">
-    <h2>Uso aceptable</h2>
-    <p>Esto emite infrarrojos a dispositivos reales. Las reglas son cortas.</p>
-    <div class="notice">
+    <h2 lang="es">Uso aceptable</h2><h2 lang="en">Acceptable use</h2>
+    <p lang="es">Esto emite infrarrojos a dispositivos reales. Las reglas son cortas.</p>
+    <p lang="en">This transmits infrared at real devices. The rules are short.</p>
+    <div class="notice" lang="es">
       <p>Úsalo solo con dispositivos <strong>propios</strong> o que tengas
         <strong>permiso explícito</strong> para probar.</p>
       <p>No lo uses en eventos en directo, ni para interferir con espectáculos,
@@ -205,14 +265,30 @@ footer p:last-child{margin:0}
         protocolo. Sin garantía de ningún tipo: verifica siempre con tu propio
         hardware.</p>
     </div>
+    <div class="notice" lang="en">
+      <p>Use it only with devices you <strong>own</strong> or have
+        <strong>explicit permission</strong> to test.</p>
+      <p>Do not use it at live events, or to interfere with performances, venue
+        equipment or devices belonging to other people.</p>
+      <p>It is published for interoperability, preservation and learning the
+        protocol. With no warranty of any kind: always verify with your own
+        hardware.</p>
+    </div>
   </section>
 
   <section id="licencias">
-    <h2>Licencias y atribuciones</h2>
-    <p>El protocolo lo documentó la comunidad y se publicó bajo MIT. Este
+    <h2 lang="es">Licencias y atribuciones</h2><h2 lang="en">Licenses and attribution</h2>
+    <p lang="es">El protocolo lo documentó la comunidad y se publicó bajo MIT. Este
       proyecto implementa esa documentación y conserva los avisos originales.</p>
+    <p lang="en">The protocol was documented by the community and published under
+      MIT. This project implements that documentation and keeps the original
+      notices.</p>
     <table>
-      <thead><tr><th>Proyecto</th><th>Autoría</th><th>Licencia</th></tr></thead>
+      <thead><tr>
+        <th><span lang="es">Proyecto</span><span lang="en">Project</span></th>
+        <th><span lang="es">Autoría</span><span lang="en">Author</span></th>
+        <th><span lang="es">Licencia</span><span lang="en">License</span></th>
+      </tr></thead>
       <tbody>
         <tr>
           <td><a href="https://github.com/danielweidman/pixmob-ir-reverse-engineering">pixmob-ir-reverse-engineering</a></td>
@@ -228,26 +304,42 @@ footer p:last-child{margin:0}
         </tr>
       </tbody>
     </table>
-    <p style="margin-top:1.1rem;font-size:.88rem;color:var(--dim)">
+    <p style="margin-top:1.1rem;font-size:.88rem;color:var(--dim)" lang="es">
       El texto completo está en
       <a href="https://github.com/Adrianmtzb/led-badge-blaster/blob/main/THIRD_PARTY_NOTICES.md">THIRD_PARTY_NOTICES.md</a>.
       Este firmware es MIT; mira
       <a href="https://github.com/Adrianmtzb/led-badge-blaster/blob/main/LICENSE">LICENSE</a>.
     </p>
+    <p style="margin-top:1.1rem;font-size:.88rem;color:var(--dim)" lang="en">
+      The full text is in
+      <a href="https://github.com/Adrianmtzb/led-badge-blaster/blob/main/THIRD_PARTY_NOTICES.md">THIRD_PARTY_NOTICES.md</a>.
+      This firmware is MIT; see
+      <a href="https://github.com/Adrianmtzb/led-badge-blaster/blob/main/LICENSE">LICENSE</a>.
+    </p>
   </section>
 
   <footer>
-    <p><strong>Aviso.</strong> Proyecto de la comunidad, sin ánimo comercial, no
+    <p lang="es"><strong>Aviso.</strong> Proyecto de la comunidad, sin ánimo comercial, no
       afiliado ni respaldado por PixMob / Eski Inc. Existen patentes de terceros
       sobre sistemas de control de iluminación distribuida, entre ellas
       <a href="https://patents.google.com/patent/US10863607B2/en">US10863607B2</a>;
       se citan como contexto informativo y esto no es asesoría legal.</p>
-    <p>Si representas a un titular de derechos y ves un problema concreto, abre
+    <p lang="en"><strong>Notice.</strong> Community project, non-commercial, not
+      affiliated with or endorsed by PixMob / Eski Inc. Third-party patents exist
+      on distributed lighting control systems, among them
+      <a href="https://patents.google.com/patent/US10863607B2/en">US10863607B2</a>;
+      they are cited as informative context and this is not legal advice.</p>
+    <p lang="es">Si representas a un titular de derechos y ves un problema concreto, abre
       un <a href="https://github.com/Adrianmtzb/led-badge-blaster/issues">issue</a>
       o escribe por los canales de
       <a href="https://github.com/Adrianmtzb/led-badge-blaster/blob/main/SECURITY.md">SECURITY.md</a>;
       se atienden reclamaciones razonadas.</p>
-    <p><a href="https://github.com/Adrianmtzb/led-badge-blaster">Código en GitHub</a> ·
+    <p lang="en">If you represent a rights holder and see a concrete problem, open an
+      <a href="https://github.com/Adrianmtzb/led-badge-blaster/issues">issue</a>
+      or write through the channels in
+      <a href="https://github.com/Adrianmtzb/led-badge-blaster/blob/main/SECURITY.md">SECURITY.md</a>;
+      reasoned claims are attended to.</p>
+    <p><a href="https://github.com/Adrianmtzb/led-badge-blaster"><span lang="es">Código en GitHub</span><span lang="en">Source on GitHub</span></a> ·
       MIT © Adrianmb</p>
   </footer>
 </div>
@@ -257,6 +349,38 @@ footer p:last-child{margin:0}
 // paleta de esta página no puede quedarse atrás respecto a lo que se instala.
 const box = document.getElementById('cats');
 const strip = document.getElementById('strip');
+
+// El idioma sale del navegador la primera vez y luego de lo que el visitante
+// eligiera. El catalogo trae ambos, asi que cambiarlo no pide otra peticion.
+const root = document.documentElement;
+let L = (() => {
+  try { const g = localStorage.getItem('lang'); if (g === 'es' || g === 'en') return g; } catch (e) {}
+  return (navigator.language || '').toLowerCase().startsWith('es') ? 'es' : 'en';
+})();
+const TXT = {
+  es: { efecto: ' efecto', efectos: ' efectos', otro: 'English',
+        fallo: 'No se pudo cargar el catálogo. Está en data/presets/ del repositorio.',
+        titulo: 'LED Badge Blaster · instalador' },
+  en: { efecto: ' effect', efectos: ' effects', otro: 'Español',
+        fallo: 'Could not load the catalog. It lives in data/presets/ in the repository.',
+        titulo: 'LED Badge Blaster · installer' },
+};
+let categories = [];
+
+function paintLang() {
+  root.lang = L;
+  document.title = TXT[L].titulo;
+  const b = document.getElementById('lang');
+  b.textContent = TXT[L].otro;
+  b.hidden = false;
+  if (categories.length) drawCats();
+}
+
+document.getElementById('lang').onclick = () => {
+  L = L === 'es' ? 'en' : 'es';
+  try { localStorage.setItem('lang', L); } catch (e) {}
+  paintLang();
+};
 
 // La versión sale del propio manifest que va a usar el instalador, así que es
 // la que se escribe. El panel del dispositivo muestra la que tiene puesta, y
@@ -271,43 +395,50 @@ try {
 try {
   const res = await fetch('catalog.json');
   if (!res.ok) throw new Error(res.status);
-  const { categories } = await res.json();
+  const { categories: cats } = await res.json();
 
-  for (const { hex } of categories.flatMap(c => c.colors)) {
+  for (const { hex } of cats.flatMap(c => c.colors)) {
     const s = document.createElement('span');
     s.style.background = hex;
     strip.appendChild(s);
   }
 
+  categories = cats;
+  paintLang();
+} catch (e) {
+  box.textContent = TXT[L].fallo;
+  box.style.color = 'var(--dim)';
+  box.style.fontSize = '.9rem';
+  paintLang();
+}
+
+function drawCats() {
+  box.textContent = '';
   for (const cat of categories) {
     const d = document.createElement('div');
     d.className = 'cat';
 
     const h = document.createElement('h3');
-    h.append(cat.label);
+    h.append(L === 'en' && cat.labelEn ? cat.labelEn : cat.label);
     const em = document.createElement('em');
-    em.textContent = cat.colors.length + (cat.colors.length === 1 ? ' efecto' : ' efectos');
+    em.textContent = cat.colors.length + TXT[L][cat.colors.length === 1 ? 'efecto' : 'efectos'];
     h.appendChild(em);
 
     const p = document.createElement('p');
-    p.textContent = cat.blurb;
+    p.textContent = L === 'en' && cat.blurbEn ? cat.blurbEn : cat.blurb;
 
     const sw = document.createElement('div');
     sw.className = 'swatches';
     for (const c of cat.colors) {
       const s = document.createElement('span');
       s.style.background = c.hex;
-      s.title = c.name + ' ' + c.hex;
+      s.title = (L === 'en' && c.nameEn ? c.nameEn : c.name) + ' ' + c.hex;
       sw.appendChild(s);
     }
 
     d.append(h, p, sw);
     box.appendChild(d);
   }
-} catch (e) {
-  box.textContent = 'No se pudo cargar el catálogo. Está en data/presets/ del repositorio.';
-  box.style.color = 'var(--dim)';
-  box.style.fontSize = '.9rem';
 }
 </script>
 </body>
