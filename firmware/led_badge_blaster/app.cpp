@@ -44,6 +44,20 @@ bool appSendCurrent() {
   return true;
 }
 
+// La trama viene de fuera del catálogo, así que no hay color asociado y la
+// selección no se toca: el LED vuelve solo al color del efecto elegido.
+bool appSendRaw(const char* pronto) {
+  Serial.printf("SEND raw len=%u\n", (unsigned)strlen(pronto));
+
+  if (!irSendPronto(pronto)) {
+    Serial.println("ERR: trama PRONTO invalida");
+    return false;
+  }
+
+  ledFlash(255, 255, 255, FLASH_MS);
+  return true;
+}
+
 bool appSendAbsolute(uint16_t absIdx) {
   if (!catalogSelect(absIdx)) return false;
   appRefreshLed();

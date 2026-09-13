@@ -2,6 +2,7 @@
 #include "config.h"
 #include "app.h"
 #include "catalog.h"
+#include "ir_sender.h"
 #include "net_portal.h"
 #include "web_ui.h"
 
@@ -140,6 +141,44 @@ static void handleSend() {
   server.send(200, "application/json", "{\"ok\":true}");
 }
 
+// Emite una trama PRONTO arbitraria. Es la vía para probar tramas nuevas sin
+// recompilar; queda fuera del catálogo y no altera la selección actual.
+static void handleRaw() {
+  if (!sameOrigin()) return;
+
+  if (!server.hasArg("pronto")) {
+    server.send(400, "application/json", "{\"error\":\"falta pronto\"}");
+    return;
+  }
+
+  const String pronto = server.arg("pronto");
+
+  // Se acota antes de mirar el contenido: el buffer del emisor es fijo y no
+  // tiene sentido recorrer una cadena que nunca va a caber.
+  if (pronto.length() < 16 || pronto.length() > PRONTO_MAX_CHARS) {
+    server.send(400, "application/json", "{\"error\":\"longitud fuera de rango\"}");
+    return;
+  }
+
+  for (size_t i = 0; i < pronto.length(); i++) {
+    const char c = pronto[i];
+    // Misma tolerancia que el parser del emisor: hex y espacios, nada más.
+    const bool ok = isxdigit((unsigned char)c) || c == ' ' || c == '\t' ||
+                    c == '\r' || c == '\n';
+    if (!ok) {
+      server.send(400, "application/json", "{\"error\":\"solo hex y espacios\"}");
+      return;
+    }
+  }
+
+  if (!appSendRaw(pronto.c_str())) {
+    server.send(400, "application/json", "{\"error\":\"trama PRONTO invalida\"}");
+    return;
+  }
+
+  server.send(200, "application/json", "{\"ok\":true}");
+}
+
 static void handleScan() {
   const int n = WiFi.scanNetworks();
 
@@ -200,6 +239,7 @@ void webBegin() {
   server.on("/api/state", HTTP_GET, handleState);
   server.on("/api/scan", HTTP_GET, handleScan);
   server.on("/api/send", HTTP_POST, handleSend);
+  server.on("/api/raw", HTTP_POST, handleRaw);
   server.on("/api/wifi", HTTP_POST, handleWifi);
   server.on("/api/forget", HTTP_POST, handleForget);
   server.onNotFound(handleNotFound);

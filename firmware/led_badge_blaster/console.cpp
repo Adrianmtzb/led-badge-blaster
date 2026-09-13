@@ -2,9 +2,11 @@
 #include "app.h"
 #include "catalog.h"
 #include "net_portal.h"
+#include "ir_sender.h"
 
 // LINE_MAX es una macro de limits.h en este toolchain, de ahí el nombre propio.
-static const uint16_t kLineMax = 96;
+// Da para 'raw ' más una trama PRONTO completa, que es la línea más larga.
+static const uint16_t kLineMax = PRONTO_MAX_CHARS + 8;
 
 static String readLine() {
   static String buf;
@@ -32,6 +34,7 @@ static void handleLine(const String& line) {
     Serial.println("  mode <categoria>    ver 'cats'");
     Serial.println("  pos <n>             posicion dentro de la categoria");
     Serial.println("  send [n]            emite el actual, o el indice absoluto n");
+    Serial.println("  raw <pronto hex>    emite una trama suelta, sin tocar la seleccion");
     Serial.println("  next                avanza posicion");
     Serial.println("  list                comandos de la categoria actual");
     Serial.println("  net                 estado de red");
@@ -84,6 +87,12 @@ static void handleLine(const String& line) {
     const long p = n.toInt();
     if (p < 0 || catalogCurrentCount() == 0) { Serial.println("ERR: posicion invalida"); return; }
     appSetPosition((uint16_t)(p % catalogCurrentCount()));
+    return;
+  }
+
+  if (lower.startsWith("raw ")) {
+    String hex = lower.substring(4); hex.trim();
+    if (!appSendRaw(hex.c_str())) Serial.println("ERR: trama PRONTO invalida");
     return;
   }
 

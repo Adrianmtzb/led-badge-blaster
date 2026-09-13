@@ -6,7 +6,7 @@
 
 static IRsend irsend(PIN_IRLED);
 
-static const uint16_t PRONTO_MAX_WORDS = 64;  // la trama más larga usa 46
+// PRONTO_MAX_WORDS vive en ir_sender.h; la trama más larga del catálogo usa 46.
 static uint16_t prontoBuf[PRONTO_MAX_WORDS];
 
 static bool isHexChar(char c) {

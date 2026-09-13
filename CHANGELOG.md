@@ -7,6 +7,10 @@ Este proyecto sigue [Versionado Semántico](https://semver.org/lang/es/).
 
 ### Añadido
 
+- `POST /api/raw` y el comando serie `raw <trama>` emiten una trama PRONTO que
+  no está en el catálogo, para probar tramas nuevas sin recompilar. Validan
+  longitud y juego de caracteres, van detrás del mismo `X-Requested-With` que el
+  resto de rutas que emiten, y no tocan la selección actual.
 - La versión del firmware se muestra en el pie del panel, leída de
   `/api/state`, y la que va a escribir el instalador aparece junto al botón de
   la página pública. Comparar las dos dice si una reinstalación entró.

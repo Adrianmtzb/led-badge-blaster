@@ -140,6 +140,7 @@ el `WebServer` del core ESP32 no lo parsea.
 | `GET` | `/api/state` | — | Categoría, posición, efecto actual y estado de red |
 | `GET` | `/api/scan` | — | Redes WiFi visibles |
 | `POST` | `/api/send` | `index` (0–66) | `{"ok":true}` |
+| `POST` | `/api/raw` | `pronto` (hex PRONTO) | `{"ok":true}` |
 | `POST` | `/api/wifi` | `ssid`, `pass` | Guarda y reinicia |
 | `POST` | `/api/forget` | — | Borra credenciales y reinicia |
 
@@ -153,6 +154,22 @@ curl -X POST http://led-badge.local/api/send \
   -H 'X-Requested-With: curl' \
   -d 'index=12'
 ```
+
+`/api/raw` emite una trama que no está en el catálogo. Existe para probar tramas
+nuevas sin recompilar: no cambia la selección ni el color de reposo del LED, y
+sólo acepta dígitos hex y espacios, hasta 64 palabras PRONTO. El emisor rechaza
+cualquier cosa que no encaje en ese formato. Lo mismo desde el puerto serie con
+`raw <trama>`.
+
+```bash
+curl -X POST http://led-badge.local/api/raw \
+  -H 'X-Requested-With: curl' \
+  --data-urlencode 'pronto=0000 006D 0013 0000 0035 006A 001B 0050 001B 001B 001B 001B 0035 001B 001B 006A 001B 0035 001B 001B 0035 0050 0035 001B 001B 0035 001B 0050 0035 001B 0035 0050 0035 001B 0035 0035 001B 0035 0035 001B 001B 04E7'
+```
+
+Emitir tramas arbitrarias amplía lo que el dispositivo puede hacer más allá del
+catálogo, así que aplica igual el [uso aceptable](#uso-aceptable): sólo con
+equipos propios o con permiso, y nunca en un evento en marcha.
 
 `/api/wifi` y `/api/forget` responden y **reinician 1,2 s después**, así que la
 conexión se corta: el cliente suele estar hablando por el AP que se va a tumbar.
