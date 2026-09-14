@@ -1,0 +1,113 @@
+# API de LED Badge Blaster — peticiones de ejemplo para la extension REST Client.
+#
+# Los parametros van como query string o x-www-form-urlencoded: el WebServer del
+# core ESP32 no parsea JSON.
+#
+# Las rutas que mutan algo (POST) exigen la cabecera X-Requested-With. Es un
+# cortafuegos contra CSRF: una web ajena no puede anadir cabeceras propias en una
+# peticion no-cors, y el dispositivo no responde preflight. Los GET no la piden.
+
+@host = led-badge.local
+# En modo portal, el dispositivo levanta su propio AP en esta IP:
+@portal = 192.168.4.1
+@xrw = X-Requested-With: rest-client
+
+
+### Panel de control (HTML servido desde PROGMEM)
+GET http://{{host}}/
+
+
+### Catalogo completo: 6 categorias y 67 efectos con nombre y color
+# {"categories":[{"key":"CAPTURAS","label":"Capturas","blurb":"…","count":25}, …],
+#  "commands":[{"i":0,"id":"CAP_00","name":"Rojo","note":"P_PULSO_00",
+#               "color":"#F02000","mode":"CAPTURAS"}, …]}
+GET http://{{host}}/api/commands
+
+
+### Estado: seleccion actual, red y version de firmware
+# {"mode":"CAPTURAS","position":0,"count":25,"index":0,"name":"Rojo",
+#  "net":{"mode":"STA","ssid":"…","ip":"…"},"version":"2.0.0"}
+GET http://{{host}}/api/state
+
+
+### Redes WiFi visibles (tarda ~2 s; bloquea el resto de peticiones)
+GET http://{{host}}/api/scan
+
+
+### Emitir un efecto del catalogo por indice absoluto (0–66)
+# 0 CAP_00 Rojo · 25 BAS_00 Rojo pleno · 35 ENV_00 Destello
+# 43 MUL_00 Chispeo denso · 49 ESC_00 Atardecer 1 · 62 GRP_00 Broadcast
+POST http://{{host}}/api/send
+{{xrw}}
+Content-Type: application/x-www-form-urlencoded
+
+index=0
+
+
+### Emitir una trama PRONTO suelta, fuera del catalogo
+# Para probar tramas nuevas sin recompilar. No cambia la seleccion ni el color de
+# reposo del LED. Acepta hex y espacios, de 16 a 320 caracteres (64 palabras).
+# Los espacios van como %20 para que el cuerpo del formulario no sea ambiguo.
+POST http://{{host}}/api/raw
+{{xrw}}
+Content-Type: application/x-www-form-urlencoded
+
+pronto=0000%20006D%200013%200000%200035%20006A%20001B%200050%20001B%20001B%20001B%20001B%200035%20001B%20001B%20006A%20001B%200035%20001B%20001B%200035%200050%200035%20001B%20001B%200035%20001B%200050%200035%20001B%200035%200050%200035%20001B%200035%200035%20001B%200035%200035%20001B%20001B%2004E7
+
+
+### Guardar WiFi y reiniciar
+# Responde y reinicia 1,2 s despues: la conexion se corta sola, porque el cliente
+# suele estar hablando por el AP que se va a tumbar. Lanzar desde el portal.
+POST http://{{portal}}/api/wifi
+{{xrw}}
+Content-Type: application/x-www-form-urlencoded
+
+ssid=MiRed&pass=micontrasena
+
+
+### Borrar credenciales y reiniciar en modo portal
+# Tambien reinicia 1,2 s despues. Deja el dispositivo en su propio AP,
+# con la contrasena "ledbadge".
+POST http://{{host}}/api/forget
+{{xrw}}
+
+
+### --- Casos de error, para comprobar las validaciones ---
+
+### Sin X-Requested-With → 403 {"error":"forbidden"}
+POST http://{{host}}/api/send
+Content-Type: application/x-www-form-urlencoded
+
+index=0
+
+### Indice fuera de rango → 400 {"error":"index fuera de rango"}
+POST http://{{host}}/api/send
+{{xrw}}
+Content-Type: application/x-www-form-urlencoded
+
+index=67
+
+### Trama con basura → 400 {"error":"solo hex y espacios"}
+POST http://{{host}}/api/raw
+{{xrw}}
+Content-Type: application/x-www-form-urlencoded
+
+pronto=0000%20006D%20zzzz%200000%200035%20006A%20001B%200050
+
+### Trama demasiado corta → 400 {"error":"longitud fuera de rango"}
+POST http://{{host}}/api/raw
+{{xrw}}
+Content-Type: application/x-www-form-urlencoded
+
+pronto=0000%20006D
+
+### Palabra de mas de 4 digitos: pasa longitud y juego de caracteres,
+### la rechaza el parser → 400 {"error":"trama PRONTO invalida"}
+POST http://{{host}}/api/raw
+{{xrw}}
+Content-Type: application/x-www-form-urlencoded
+
+pronto=00000%20006D%200013%200000
+
+### Ruta inexistente → 404 en STA, 302 a la raiz en modo portal
+GET http://{{host}}/api/nope
