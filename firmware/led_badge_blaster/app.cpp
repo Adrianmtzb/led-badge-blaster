@@ -22,7 +22,7 @@ void appRefreshLed() {
   ledSetBase((rgb >> 16) & 0xFF, (rgb >> 8) & 0xFF, rgb & 0xFF);
 }
 
-bool appSendCurrent() {
+bool appSendCurrent(uint8_t extra) {
   uint16_t absIdx = 0;
   if (!catalogCurrentIndex(absIdx)) {
     Serial.printf("ERR: la categoria %s esta vacia\n", modeName(catalogMode()));
@@ -30,10 +30,11 @@ bool appSendCurrent() {
   }
 
   const Command& cmd = COMMANDS[absIdx];
-  Serial.printf("SEND mode=%s pos=%u abs=%u id=%s name=%s\n",
-                modeName(catalogMode()), catalogPosition(), absIdx, cmd.id, cmd.name);
+  Serial.printf("SEND mode=%s pos=%u abs=%u id=%s name=%s x%u\n",
+                modeName(catalogMode()), catalogPosition(), absIdx, cmd.id, cmd.name,
+                (unsigned)(extra + 1));
 
-  if (!irSendPronto(cmd.pronto)) {
+  if (!irSendPronto(cmd.pronto, extra)) {
     Serial.println("ERR: trama PRONTO invalida");
     return false;
   }
@@ -44,10 +45,24 @@ bool appSendCurrent() {
   return true;
 }
 
-bool appSendAbsolute(uint16_t absIdx) {
+// La trama viene de fuera del catálogo, así que no hay color asociado y la
+// selección no se toca: el LED vuelve solo al color del efecto elegido.
+bool appSendRaw(const char* pronto, uint8_t extra) {
+  Serial.printf("SEND raw len=%u x%u\n", (unsigned)strlen(pronto), (unsigned)(extra + 1));
+
+  if (!irSendPronto(pronto, extra)) {
+    Serial.println("ERR: trama PRONTO invalida");
+    return false;
+  }
+
+  ledFlash(255, 255, 255, FLASH_MS);
+  return true;
+}
+
+bool appSendAbsolute(uint16_t absIdx, uint8_t extra) {
   if (!catalogSelect(absIdx)) return false;
   appRefreshLed();
-  return appSendCurrent();
+  return appSendCurrent(extra);
 }
 
 void appSetMode(Mode m) {

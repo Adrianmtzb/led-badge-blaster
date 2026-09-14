@@ -2,6 +2,7 @@
 #include "config.h"
 #include "app.h"
 #include "catalog.h"
+#include "ir_sender.h"
 #include "net_portal.h"
 #include "web_ui.h"
 
@@ -56,7 +57,7 @@ static void handleCommands() {
   // ~100 B por comando. Reservar de una vez evita que String crezca a
   // realloc por realloc y fragmente el heap con el catálogo entero.
   String out;
-  out.reserve(128 * COMMAND_COUNT);
+  out.reserve(200 * COMMAND_COUNT);
   out += "{\"categories\":[";
   for (uint8_t m = 0; m < MODE_COUNT; m++) {
     if (m) out += ',';
@@ -64,8 +65,12 @@ static void handleCommands() {
     out += CATEGORIES[m].key;
     out += "\",\"label\":\"";
     out += jsonEscape(CATEGORIES[m].label);
+    out += "\",\"labelEn\":\"";
+    out += jsonEscape(CATEGORIES[m].labelEn);
     out += "\",\"blurb\":\"";
     out += jsonEscape(CATEGORIES[m].blurb);
+    out += "\",\"blurbEn\":\"";
+    out += jsonEscape(CATEGORIES[m].blurbEn);
     out += "\",\"count\":";
     out += catalogCount((Mode)m);
     out += '}';
@@ -81,8 +86,12 @@ static void handleCommands() {
     out += COMMANDS[i].id;
     out += "\",\"name\":\"";
     out += jsonEscape(COMMANDS[i].name);
+    out += "\",\"nameEn\":\"";
+    out += jsonEscape(COMMANDS[i].nameEn);
     out += "\",\"note\":\"";
     out += jsonEscape(COMMANDS[i].note);
+    out += "\",\"noteEn\":\"";
+    out += jsonEscape(COMMANDS[i].noteEn);
     out += "\",\"color\":\"";
     out += hex;
     out += "\",\"mode\":\"";
@@ -118,6 +127,16 @@ static void handleState() {
   server.send(200, "application/json", out);
 }
 
+// Repeticiones extra opcionales. Sin el parámetro se usa el valor por defecto,
+// que ya cubre el caso normal de despertar un badge dormido.
+static uint8_t argRepeat() {
+  if (!server.hasArg("repeat")) return IR_REPEATS;
+  const long r = server.arg("repeat").toInt();
+  if (r < 0) return 0;
+  if (r > IR_REPEATS_MAX) return IR_REPEATS_MAX;
+  return (uint8_t)r;
+}
+
 static void handleSend() {
   if (!sameOrigin()) return;
 
@@ -132,8 +151,46 @@ static void handleSend() {
     return;
   }
 
-  if (!appSendAbsolute((uint16_t)idx)) {
+  if (!appSendAbsolute((uint16_t)idx, argRepeat())) {
     server.send(500, "application/json", "{\"error\":\"no se pudo emitir\"}");
+    return;
+  }
+
+  server.send(200, "application/json", "{\"ok\":true}");
+}
+
+// Emite una trama PRONTO arbitraria. Es la vía para probar tramas nuevas sin
+// recompilar; queda fuera del catálogo y no altera la selección actual.
+static void handleRaw() {
+  if (!sameOrigin()) return;
+
+  if (!server.hasArg("pronto")) {
+    server.send(400, "application/json", "{\"error\":\"falta pronto\"}");
+    return;
+  }
+
+  const String pronto = server.arg("pronto");
+
+  // Se acota antes de mirar el contenido: el buffer del emisor es fijo y no
+  // tiene sentido recorrer una cadena que nunca va a caber.
+  if (pronto.length() < 16 || pronto.length() > PRONTO_MAX_CHARS) {
+    server.send(400, "application/json", "{\"error\":\"longitud fuera de rango\"}");
+    return;
+  }
+
+  for (size_t i = 0; i < pronto.length(); i++) {
+    const char c = pronto[i];
+    // Misma tolerancia que el parser del emisor: hex y espacios, nada más.
+    const bool ok = isxdigit((unsigned char)c) || c == ' ' || c == '\t' ||
+                    c == '\r' || c == '\n';
+    if (!ok) {
+      server.send(400, "application/json", "{\"error\":\"solo hex y espacios\"}");
+      return;
+    }
+  }
+
+  if (!appSendRaw(pronto.c_str(), argRepeat())) {
+    server.send(400, "application/json", "{\"error\":\"trama PRONTO invalida\"}");
     return;
   }
 
@@ -200,6 +257,7 @@ void webBegin() {
   server.on("/api/state", HTTP_GET, handleState);
   server.on("/api/scan", HTTP_GET, handleScan);
   server.on("/api/send", HTTP_POST, handleSend);
+  server.on("/api/raw", HTTP_POST, handleRaw);
   server.on("/api/wifi", HTTP_POST, handleWifi);
   server.on("/api/forget", HTTP_POST, handleForget);
   server.onNotFound(handleNotFound);

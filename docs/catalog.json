@@ -3,106 +3,133 @@
     {
       "key": "CAPTURAS",
       "label": "Capturas",
+      "labelEn": "Captures",
       "blurb": "Colores decodificados de capturas reales. La referencia de compatibilidad más fiable.",
+      "blurbEn": "Colors decoded from real captures. The most reliable compatibility reference.",
       "colors": [
         {
           "name": "Rojo",
+          "nameEn": "Red",
           "hex": "#F02000"
         },
         {
           "name": "Naranja",
+          "nameEn": "Orange",
           "hex": "#F05000"
         },
         {
           "name": "Naranja oscuro",
+          "nameEn": "Dark orange",
           "hex": "#B84400"
         },
         {
           "name": "Amarillo dorado",
+          "nameEn": "Golden yellow",
           "hex": "#E4BC00"
         },
         {
           "name": "Ámbar",
+          "nameEn": "Amber",
           "hex": "#E49400"
         },
         {
           "name": "Oliva",
+          "nameEn": "Olive",
           "hex": "#B8BC00"
         },
         {
           "name": "Verde",
+          "nameEn": "Green",
           "hex": "#10D000"
         },
         {
           "name": "Verde claro",
+          "nameEn": "Light green",
           "hex": "#84F05C"
         },
         {
           "name": "Verde menta",
+          "nameEn": "Mint green",
           "hex": "#68F0A0"
         },
         {
           "name": "Cian",
+          "nameEn": "Cyan",
           "hex": "#34F0FC"
         },
         {
           "name": "Azul cielo",
+          "nameEn": "Sky blue",
           "hex": "#1094DC"
         },
         {
           "name": "Azul",
+          "nameEn": "Blue",
           "hex": "#480CFC"
         },
         {
           "name": "Morado",
+          "nameEn": "Purple",
           "hex": "#8838FC"
         },
         {
           "name": "Púrpura",
+          "nameEn": "Deep purple",
           "hex": "#B80CDC"
         },
         {
           "name": "Ciruela",
+          "nameEn": "Plum",
           "hex": "#840C5C"
         },
         {
           "name": "Frambuesa",
+          "nameEn": "Raspberry",
           "hex": "#E4385C"
         },
         {
           "name": "Fucsia",
+          "nameEn": "Fuchsia",
           "hex": "#CC0C5C"
         },
         {
           "name": "Rosa",
+          "nameEn": "Pink",
           "hex": "#EC74A0"
         },
         {
           "name": "Melocotón",
+          "nameEn": "Peach",
           "hex": "#F09C5C"
         },
         {
           "name": "Salmón",
+          "nameEn": "Salmon",
           "hex": "#F0745C"
         },
         {
           "name": "Lavanda",
+          "nameEn": "Lavender",
           "hex": "#B894FC"
         },
         {
           "name": "Verde lima",
+          "nameEn": "Lime green",
           "hex": "#CCF05C"
         },
         {
           "name": "Azul pálido",
+          "nameEn": "Pale blue",
           "hex": "#B8D0FC"
         },
         {
           "name": "Violeta",
+          "nameEn": "Violet",
           "hex": "#B80CFC"
         },
         {
           "name": "Magenta",
+          "nameEn": "Magenta",
           "hex": "#F034FC"
         }
       ]
@@ -110,46 +137,58 @@
     {
       "key": "BASICOS",
       "label": "Básicos",
+      "labelEn": "Basics",
       "blurb": "Primarios y secundarios al máximo que el badge puede representar.",
+      "blurbEn": "Primaries and secondaries at the maximum the badge can represent.",
       "colors": [
         {
           "name": "Rojo pleno",
+          "nameEn": "Full red",
           "hex": "#FC0000"
         },
         {
           "name": "Verde pleno",
+          "nameEn": "Full green",
           "hex": "#00FC00"
         },
         {
           "name": "Azul pleno",
+          "nameEn": "Full blue",
           "hex": "#0000FC"
         },
         {
           "name": "Cyan",
+          "nameEn": "Cyan",
           "hex": "#00FCFC"
         },
         {
           "name": "Magenta",
+          "nameEn": "Magenta",
           "hex": "#FC00FC"
         },
         {
           "name": "Amarillo",
+          "nameEn": "Yellow",
           "hex": "#FCFC00"
         },
         {
           "name": "Blanco",
+          "nameEn": "White",
           "hex": "#FCFCFC"
         },
         {
           "name": "Blanco cálido",
+          "nameEn": "Warm white",
           "hex": "#FCB46C"
         },
         {
           "name": "Blanco frío",
+          "nameEn": "Cool white",
           "hex": "#D8ECFC"
         },
         {
           "name": "Apagado",
+          "nameEn": "Off",
           "hex": "#000000"
         }
       ]
@@ -157,38 +196,48 @@
     {
       "key": "ENVOLVENTES",
       "label": "Envolventes",
+      "labelEn": "Envelopes",
       "blurb": "Un mismo color con distinta forma temporal: attack, sustain y release.",
+      "blurbEn": "One color with different shapes over time: attack, sustain and release.",
       "colors": [
         {
           "name": "Destello",
+          "nameEn": "Flash",
           "hex": "#FCFCFC"
         },
         {
           "name": "Pulso corto",
+          "nameEn": "Short pulse",
           "hex": "#FC5000"
         },
         {
           "name": "Respiración",
+          "nameEn": "Breathing",
           "hex": "#008CFC"
         },
         {
           "name": "Fundido lento",
+          "nameEn": "Slow fade",
           "hex": "#B400FC"
         },
         {
           "name": "Onda larga",
+          "nameEn": "Long wave",
           "hex": "#00FCB4"
         },
         {
           "name": "Golpe seco",
+          "nameEn": "Sharp hit",
           "hex": "#FC003C"
         },
         {
           "name": "Brasa",
+          "nameEn": "Ember",
           "hex": "#FC6400"
         },
         {
           "name": "Latido",
+          "nameEn": "Heartbeat",
           "hex": "#FC0000"
         }
       ]
@@ -196,30 +245,38 @@
     {
       "key": "MULTITUD",
       "label": "Multitud",
+      "labelEn": "Crowd",
       "blurb": "Usan el campo chance: solo una fracción aleatoria de los badges responde.",
+      "blurbEn": "They use the chance field: only a random fraction of badges responds.",
       "colors": [
         {
           "name": "Chispeo denso",
+          "nameEn": "Dense sparkle",
           "hex": "#FCFCFC"
         },
         {
           "name": "Chispeo medio",
+          "nameEn": "Medium sparkle",
           "hex": "#FCECB4"
         },
         {
           "name": "Chispeo disperso",
+          "nameEn": "Sparse sparkle",
           "hex": "#B4DCFC"
         },
         {
           "name": "Estrellas raras",
+          "nameEn": "Rare stars",
           "hex": "#FCFCD8"
         },
         {
           "name": "Lluvia azul",
+          "nameEn": "Blue rain",
           "hex": "#0078FC"
         },
         {
           "name": "Ascuas dispersas",
+          "nameEn": "Scattered embers",
           "hex": "#FC3C00"
         }
       ]
@@ -227,58 +284,73 @@
     {
       "key": "ESCENAS",
       "label": "Escenas",
+      "labelEn": "Scenes",
       "blurb": "Paletas coherentes pensadas para lanzarse en secuencia.",
+      "blurbEn": "Coherent palettes meant to be fired in sequence.",
       "colors": [
         {
           "name": "Atardecer · 1",
+          "nameEn": "Sunset · 1",
           "hex": "#FC7800"
         },
         {
           "name": "Atardecer · 2",
+          "nameEn": "Sunset · 2",
           "hex": "#FC3C28"
         },
         {
           "name": "Atardecer · 3",
+          "nameEn": "Sunset · 3",
           "hex": "#B41450"
         },
         {
           "name": "Océano · 1",
+          "nameEn": "Ocean · 1",
           "hex": "#0064B4"
         },
         {
           "name": "Océano · 2",
+          "nameEn": "Ocean · 2",
           "hex": "#00B4C8"
         },
         {
           "name": "Océano · 3",
+          "nameEn": "Ocean · 3",
           "hex": "#003C8C"
         },
         {
           "name": "Bosque · 1",
+          "nameEn": "Forest · 1",
           "hex": "#14A028"
         },
         {
           "name": "Bosque · 2",
+          "nameEn": "Forest · 2",
           "hex": "#78C800"
         },
         {
           "name": "Neón · 1",
+          "nameEn": "Neon · 1",
           "hex": "#FC00C8"
         },
         {
           "name": "Neón · 2",
+          "nameEn": "Neon · 2",
           "hex": "#00FCDC"
         },
         {
           "name": "Neón · 3",
+          "nameEn": "Neon · 3",
           "hex": "#C8FC00"
         },
         {
           "name": "Hielo · 1",
+          "nameEn": "Ice · 1",
           "hex": "#C8F0FC"
         },
         {
           "name": "Hielo · 2",
+          "nameEn": "Ice · 2",
           "hex": "#78C8FC"
         }
       ]
@@ -286,26 +358,33 @@
     {
       "key": "GRUPOS",
       "label": "Grupos",
+      "labelEn": "Groups",
       "blurb": "El mismo color restringido a un group id. Solo responden los badges de ese grupo.",
+      "blurbEn": "The same color restricted to a group id. Only badges in that group respond.",
       "colors": [
         {
           "name": "Broadcast",
+          "nameEn": "Broadcast",
           "hex": "#FCFCFC"
         },
         {
           "name": "Grupo 1 · rojo",
+          "nameEn": "Group 1 · red",
           "hex": "#FC0000"
         },
         {
           "name": "Grupo 2 · verde",
+          "nameEn": "Group 2 · green",
           "hex": "#00FC00"
         },
         {
           "name": "Grupo 3 · azul",
+          "nameEn": "Group 3 · blue",
           "hex": "#0000FC"
         },
         {
           "name": "Grupo 4 · ámbar",
+          "nameEn": "Group 4 · amber",
           "hex": "#FCA000"
         }
       ]

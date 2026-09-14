@@ -7,11 +7,42 @@ Este proyecto sigue [Versionado Semántico](https://semver.org/lang/es/).
 
 ### Añadido
 
+- El panel está en español e inglés, nombres de los 67 efectos y de las
+  categorías incluidos. Arranca en el idioma del navegador, se cambia con un
+  botón en el pie y recuerda la elección. Las traducciones del catálogo salen de
+  `data/i18n/en.json` y `make check-catalog` falla si falta alguna.
+  La página pública de `docs/` va igual: arranca en el idioma del navegador,
+  recuerda la elección y traduce también los nombres del catálogo que lee de
+  `docs/catalog.json`.
+
+- Pestaña **Canal** en el panel: un campo y un botón para poner un badge en un
+  canal. Por debajo encadena `Set Group ID` y `Set Group Sel`, que hacen falta
+  los dos: sin el segundo el badge sigue con el grupo anterior. Va marcada y
+  separada del catálogo porque escribe memoria persistente del badge. La trama la
+  calcula el propio panel en el navegador y sale por `/api/raw`; el firmware
+  sigue sin lógica de protocolo. El codificador está implementado desde la
+  documentación de `jamesw343/PixMob_IR` (MIT) y se valida reproduciendo los 67
+  presets del catálogo byte a byte.
+- `POST /api/raw` y el comando serie `raw <trama>` emiten una trama PRONTO que
+  no está en el catálogo, para probar tramas nuevas sin recompilar. Validan
+  longitud y juego de caracteres, van detrás del mismo `X-Requested-With` que el
+  resto de rutas que emiten, y no tocan la selección actual.
 - La versión del firmware se muestra en el pie del panel, leída de
   `/api/state`, y la que va a escribir el instalador aparece junto al botón de
   la página pública. Comparar las dos dice si una reinstalación entró.
 
+- Cada envío repite ahora la trama tres veces (`IR_REPEATS`), con `repeat`
+  opcional entre 0 y 9 en `/api/send` y `/api/raw`. El badge duerme el MCU tras
+  ~60 s sin recibir nada y perdía la primera trama al despertar.
+
 ### Corregido
+
+- `led-badge.local` tardaba 5 s en resolver en cada petición. El responder mDNS
+  publicaba el registro `A` pero dejaba la consulta `AAAA` sin respuesta, y los
+  clientes esperaban el timeout entero del resolutor antes de usar la IPv4 que ya
+  tenían. Habilitar IPv6 en la conexión STA hace que el ESP32 conteste con su
+  dirección link-local: la resolución pasa de 5,01 s a ~10 ms. Por IP directa
+  nunca hubo penalización.
 
 - El doble toque en el panel ya no hace zoom ni arrastra el retardo de ~300 ms
   que el navegador espera para distinguirlo de un toque simple

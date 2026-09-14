@@ -34,6 +34,15 @@ static const uint32_t DOUBLECLICK_MS = 320;
 static const uint32_t LONGPRESS_MS   = 3000;
 
 // =====================================================
+// Emisor IR
+// =====================================================
+// El badge apaga los LEDs y duerme el MCU tras ~60 s sin recibir nada, y la
+// primera trama tras ese reposo se suele perder. Repetir el paquete lo despierta
+// y sube la probabilidad de recepción. Cada repetición cuesta ~78 ms de aire.
+static const uint8_t IR_REPEATS     = 2;   // repeticiones extra por envío
+static const uint8_t IR_REPEATS_MAX = 9;
+
+// =====================================================
 // LED de estado
 // =====================================================
 static const uint8_t  LED_BRIGHTNESS = 40;

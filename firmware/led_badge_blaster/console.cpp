@@ -1,10 +1,13 @@
 #include "console.h"
 #include "app.h"
+#include "config.h"
 #include "catalog.h"
 #include "net_portal.h"
+#include "ir_sender.h"
 
 // LINE_MAX es una macro de limits.h en este toolchain, de ahí el nombre propio.
-static const uint16_t kLineMax = 96;
+// Da para 'raw ' más una trama PRONTO completa, que es la línea más larga.
+static const uint16_t kLineMax = PRONTO_MAX_CHARS + 8;
 
 static String readLine() {
   static String buf;
@@ -32,6 +35,7 @@ static void handleLine(const String& line) {
     Serial.println("  mode <categoria>    ver 'cats'");
     Serial.println("  pos <n>             posicion dentro de la categoria");
     Serial.println("  send [n]            emite el actual, o el indice absoluto n");
+    Serial.println("  raw <pronto hex>    emite una trama suelta, sin tocar la seleccion");
     Serial.println("  next                avanza posicion");
     Serial.println("  list                comandos de la categoria actual");
     Serial.println("  net                 estado de red");
@@ -69,7 +73,7 @@ static void handleLine(const String& line) {
 
   if (lower == "forget") { netForget(); return; }
   if (lower == "next")   { appNext(); appPrintStatus(); return; }
-  if (lower == "send")   { appSendCurrent(); return; }
+  if (lower == "send")   { appSendCurrent(IR_REPEATS); return; }
 
   if (lower.startsWith("mode ")) {
     String m = lower.substring(5); m.trim();
@@ -87,11 +91,17 @@ static void handleLine(const String& line) {
     return;
   }
 
+  if (lower.startsWith("raw ")) {
+    String hex = lower.substring(4); hex.trim();
+    if (!appSendRaw(hex.c_str(), IR_REPEATS)) Serial.println("ERR: trama PRONTO invalida");
+    return;
+  }
+
   if (lower.startsWith("send ")) {
     String n = lower.substring(5); n.trim();
     const long idx = n.toInt();
     if (idx < 0 || idx >= (long)COMMAND_COUNT) { Serial.println("ERR: indice fuera de rango"); return; }
-    appSendAbsolute((uint16_t)idx);
+    appSendAbsolute((uint16_t)idx, IR_REPEATS);
     return;
   }
 

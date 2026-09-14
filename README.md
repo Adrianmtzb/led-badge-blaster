@@ -25,10 +25,12 @@ las instrucciones:
 > **No lo uses en eventos en directo**, ni para interferir con espectáculos,
 > equipos de recinto o dispositivos de otras personas.
 
-El firmware solo envía tramas de color único: enciende un badge con un color y
-una envolvente. No escribe configuración, no toca EEPROM y no cambia el grupo de
-ningún dispositivo. Se publica sin garantía de ningún tipo; verifica siempre con
-tu propio hardware.
+Los 67 efectos del catálogo son tramas de color único: encienden un badge con un
+color y una envolvente, y no dejan rastro al apagarlo. Aparte va la pestaña
+**Canal**, que sí **escribe en la EEPROM del badge** para cambiar a qué grupo
+responde. Está separada del catálogo y marcada como avanzada precisamente porque
+ese cambio es permanente. Se publica sin garantía de ningún tipo; verifica
+siempre con tu propio hardware.
 
 ---
 
@@ -39,6 +41,10 @@ tu propio hardware.
   `ESCENAS` (13) y `GRUPOS` (5).
 - **Panel con los colores a la vista.** Se elige el efecto por su color, no por
   un número; el LED de la placa muestra el que está seleccionado.
+- **Panel bilingüe** español / inglés, incluidos los nombres de los 67 efectos.
+  Arranca en el idioma del navegador y recuerda el que elijas.
+- **Pestaña Canal (avanzada)**: reprograma el grupo al que responde un badge.
+  Escribe memoria persistente, así que va aparte de los colores.
 - **Portal cautivo**: sin credenciales guardadas crea la red `LED-Badge-XXXX` y
   abre solo el panel al conectarte.
 - **Modo red**: si le das tu WiFi, se une a ella y queda en `http://led-badge.local`.
@@ -139,7 +145,8 @@ el `WebServer` del core ESP32 no lo parsea.
 | `GET` | `/api/commands` | — | Categorías y efectos, con nombre y color |
 | `GET` | `/api/state` | — | Categoría, posición, efecto actual y estado de red |
 | `GET` | `/api/scan` | — | Redes WiFi visibles |
-| `POST` | `/api/send` | `index` (0–66) | `{"ok":true}` |
+| `POST` | `/api/send` | `index` (0–66), `repeat` (opc. 0–9) | `{"ok":true}` |
+| `POST` | `/api/raw` | `pronto` (hex PRONTO), `repeat` (opc. 0–9) | `{"ok":true}` |
 | `POST` | `/api/wifi` | `ssid`, `pass` | Guarda y reinicia |
 | `POST` | `/api/forget` | — | Borra credenciales y reinicia |
 
@@ -153,6 +160,86 @@ curl -X POST http://led-badge.local/api/send \
   -H 'X-Requested-With: curl' \
   -d 'index=12'
 ```
+
+### Idiomas
+
+El panel está en español e inglés. Las cadenas de la interfaz viven en el propio
+`web_ui.h`; los nombres de efectos y categorías se generan desde
+`data/i18n/en.json` y llegan en ambos idiomas por `/api/commands`.
+
+Toda cadena visible del catálogo necesita entrada en `data/i18n/en.json`: si
+añades un preset y olvidas su traducción, `make check-catalog` falla nombrándola.
+Las cadenas que no cambian (identificadores como `P_PULSO_07`, porcentajes) se
+repiten a propósito, para que la ausencia signifique siempre un olvido.
+
+La página pública de `docs/` también está en los dos idiomas. Ahí la prosa lleva
+`<code>`, `<b>` y enlaces dentro, así que en vez de sustituir texto el marcado
+tiene las dos versiones y CSS oculta la que no toca. La descripción para
+buscadores no se puede alternar y va bilingüe en la misma línea.
+
+### Por qué se habilita IPv6
+
+`WiFi.enableIPv6(true)` en la conexión STA no está para usar IPv6, sino para que
+`led-badge.local` resuelva rápido. Sin él, el responder mDNS publica el registro
+`A` pero deja la consulta `AAAA` **sin ninguna respuesta**, ni siquiera negativa.
+Los clientes preguntan por ambas a la vez y esperan el timeout completo del
+resolutor antes de usar la IPv4 que ya tenían: medido en macOS, 5,01 s en cada
+petición por nombre. Con IPv6 activo el ESP32 contesta con su dirección
+link-local y la resolución baja a ~10 ms. Por IP nunca hubo penalización.
+
+### Repeticiones
+
+El badge apaga los LEDs y duerme el MCU tras **unos 60 s sin recibir nada**, y la
+primera trama después de ese reposo se suele perder. Por eso cada envío repite el
+paquete: `repeat=2` (tres envíos) por defecto, que es lo que hacen también el
+botón de la placa y la consola serie. Cada repetición cuesta unos 77 ms de aire,
+medidos contra la placa. El parámetro `repeat` lo ajusta entre 0 y 9; la pestaña
+Canal usa 4, porque ahí perder una trama deja el cambio a medias.
+
+Ojo si tocas esto: el parámetro `repeat` de `sendPronto` en IRremoteESP8266 solo
+repite la *segunda* secuencia del PRONTO, y estas tramas la llevan vacía. La
+repetición tiene que ser un bucle de llamadas, no ese argumento.
+
+`/api/raw` emite una trama que no está en el catálogo. Existe para probar tramas
+nuevas sin recompilar: no cambia la selección ni el color de reposo del LED, y
+sólo acepta dígitos hex y espacios, hasta 64 palabras PRONTO. El emisor rechaza
+cualquier cosa que no encaje en ese formato. Lo mismo desde el puerto serie con
+`raw <trama>`.
+
+```bash
+curl -X POST http://led-badge.local/api/raw \
+  -H 'X-Requested-With: curl' \
+  --data-urlencode 'pronto=0000 006D 0013 0000 0035 006A 001B 0050 001B 001B 001B 001B 0035 001B 001B 006A 001B 0035 001B 001B 0035 0050 0035 001B 001B 0035 001B 0050 0035 001B 0035 0050 0035 001B 0035 0035 001B 0035 0035 001B 001B 04E7'
+```
+
+Emitir tramas arbitrarias amplía lo que el dispositivo puede hacer más allá del
+catálogo, así que aplica igual el [uso aceptable](#uso-aceptable): sólo con
+equipos propios o con permiso, y nunca en un evento en marcha.
+
+### La pestaña Canal
+
+Un campo y un botón: escribes el canal (1–31), apuntas al badge y pulsas.
+
+Por debajo son dos comandos del protocolo, y hacen falta los dos: `Set Group ID`
+guarda el canal en la EEPROM del badge, y `Set Group Sel` le hace releerla — sin
+el segundo, el badge sigue con el grupo anterior hasta que reinicie. El panel los
+manda seguidos, por eso es un solo paso. De las ocho ranuras de grupo que tiene
+el protocolo usa siempre la 0, porque exponerlas no aporta nada a quien solo
+quiere poner un badge en un canal.
+
+La orden no distingue destinatario: llega a **todos los badges a la vista**, así
+que hazlo de uno en uno.
+
+Las tramas **se calculan en el navegador**, con el codificador que lleva el
+propio panel, y se emiten por `/api/raw`. El firmware no tiene lógica de
+protocolo: solo emite lo que recibe. El codificador está implementado desde la
+[documentación del protocolo](https://github.com/jamesw343/PixMob_IR/blob/HEAD/docs/ir_protocol.md)
+(MIT, ver [THIRD_PARTY_NOTICES.md](THIRD_PARTY_NOTICES.md)) y se valida
+reproduciendo los 67 presets del catálogo byte a byte.
+
+> [!WARNING]
+> Este cambio **sobrevive al apagado del badge**. A diferencia de los colores, no
+> se deshace solo. Úsalo únicamente con badges propios.
 
 `/api/wifi` y `/api/forget` responden y **reinician 1,2 s después**, así que la
 conexión se corta: el cliente suele estar hablando por el AP que se va a tumbar.
